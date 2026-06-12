@@ -1,6 +1,6 @@
-import 'package:test/test.dart';
 import 'package:pokerd/src/card.dart';
 import 'package:pokerd/src/deck.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('Deck', () {
@@ -11,7 +11,7 @@ void main() {
 
     test('test_refill', () {
       final deck = Deck();
-      deck.cards = [];
+      deck.setCards([]);
       deck.refill();
 
       expect(deck.cards.length, equals(52));
@@ -50,10 +50,10 @@ void main() {
 
     test('test_burn', () {
       final deck = Deck();
-      deck.cards = [
+      deck.setCards([
         const Card(CardRank.r2, CardSuite.cross),
         const Card(CardRank.r3, CardSuite.cross),
-      ];
+      ]);
 
       deck.burn();
 
@@ -62,11 +62,11 @@ void main() {
 
     test('test_str', () {
       final deck = Deck();
-      deck.cards = [
+      deck.setCards([
         const Card(CardRank.r5, CardSuite.heart),
         const Card(CardRank.k, CardSuite.diamond),
         const Card(CardRank.r8, CardSuite.spade),
-      ];
+      ]);
 
       expect(deck.toString(), equals('[5 ♥] [K ♦] [8 ♠]'));
     });

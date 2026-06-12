@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 
 import 'card.dart';
 
@@ -29,6 +30,7 @@ class Deck {
     _log.fine(
       'Dealing $n cards: ${result.map((card) => card.symbol).join(', ')}',
     );
+    return result;
   }
 
   void refill() {
@@ -37,6 +39,11 @@ class Deck {
       for (final suite in CardSuite.values)
         for (final rank in CardRank.values) Card(rank, suite),
     ];
+  }
+
+  @visibleForTesting
+  void setCards(List<Card> cards) {
+    _cards = cards;
   }
 
   void shuffle() {
