@@ -2,6 +2,7 @@ import 'package:test/test.dart';
 import 'package:pokerd/src/card.dart';
 import 'package:pokerd/src/player.dart';
 import 'package:pokerd/src/betting_move.dart';
+import 'package:pokerd/src/hand_rank.dart';
 
 class MockConcretePlayerClass extends Player {
   MockConcretePlayerClass(super.name);
@@ -37,7 +38,7 @@ void main() {
       player.hand = [card];
       player.bestHandCards = [card];
       player.bestHandScore = 1000;
-      player.bestHandRank = 'best hand rank';
+      player.bestHandRank = HandRank.highCard;
       player.rankSubtype = 'rank subtype';
       player.kickerCard = card;
 
@@ -53,7 +54,7 @@ void main() {
       expect(player.hand, isEmpty);
       expect(player.bestHandCards, isEmpty);
       expect(player.bestHandScore, equals(0));
-      expect(player.bestHandRank, equals(''));
+      expect(player.bestHandRank, isNull);
       expect(player.rankSubtype, equals(''));
       expect(player.kickerCard, isNull);
 

@@ -1,5 +1,6 @@
 import 'card.dart';
 import 'betting_move.dart';
+import 'hand_rank.dart';
 
 abstract class Player {
   final String name;
@@ -15,7 +16,7 @@ abstract class Player {
   bool isInGame = true;
   List<Card> bestHandCards = [];
   int bestHandScore = 0;
-  String bestHandRank = '';
+  HandRank? bestHandRank;
   String rankSubtype = '';
   Card? kickerCard;
 
@@ -32,7 +33,7 @@ abstract class Player {
     isLocked = false;
     bestHandCards = [];
     bestHandScore = 0;
-    bestHandRank = '';
+    bestHandRank = null;
     rankSubtype = '';
     kickerCard = null;
   }
