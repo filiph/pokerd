@@ -51,8 +51,8 @@ void main() {
     test('test_burn', () {
       final deck = Deck();
       deck.setCards([
-        const Card(CardRank.r2, CardSuite.cross),
-        const Card(CardRank.r3, CardSuite.cross),
+        const Card(CardRank.r2, CardSuite.club),
+        const Card(CardRank.r3, CardSuite.club),
       ]);
 
       deck.burn();

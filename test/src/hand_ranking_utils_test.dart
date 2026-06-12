@@ -68,7 +68,7 @@ void main() {
           const Card(CardRank.a, CardSuite.heart),
           const Card(CardRank.a, CardSuite.spade),
           const Card(CardRank.a, CardSuite.diamond),
-          const Card(CardRank.a, CardSuite.cross),
+          const Card(CardRank.a, CardSuite.club),
           const Card(CardRank.k, CardSuite.heart),
         ];
         expect(HandRank.scoreHand(hand), equals(81413000000));
@@ -79,7 +79,7 @@ void main() {
           const Card(CardRank.a, CardSuite.heart),
           const Card(CardRank.a, CardSuite.spade),
           const Card(CardRank.a, CardSuite.diamond),
-          const Card(CardRank.k, CardSuite.cross),
+          const Card(CardRank.k, CardSuite.club),
           const Card(CardRank.k, CardSuite.heart),
         ];
         expect(HandRank.scoreHand(hand), equals(71413000000));
@@ -101,7 +101,7 @@ void main() {
           const Card(CardRank.q, CardSuite.heart),
           const Card(CardRank.j, CardSuite.spade),
           const Card(CardRank.r10, CardSuite.diamond),
-          const Card(CardRank.r9, CardSuite.cross),
+          const Card(CardRank.r9, CardSuite.club),
           const Card(CardRank.r8, CardSuite.heart),
         ];
         expect(HandRank.scoreHand(hand), equals(51200000000));
@@ -112,7 +112,7 @@ void main() {
           const Card(CardRank.a, CardSuite.heart),
           const Card(CardRank.a, CardSuite.spade),
           const Card(CardRank.a, CardSuite.diamond),
-          const Card(CardRank.k, CardSuite.cross),
+          const Card(CardRank.k, CardSuite.club),
           const Card(CardRank.q, CardSuite.heart),
         ];
         expect(HandRank.scoreHand(hand), equals(41413120000));
@@ -123,7 +123,7 @@ void main() {
           const Card(CardRank.a, CardSuite.heart),
           const Card(CardRank.a, CardSuite.spade),
           const Card(CardRank.k, CardSuite.diamond),
-          const Card(CardRank.k, CardSuite.cross),
+          const Card(CardRank.k, CardSuite.club),
           const Card(CardRank.q, CardSuite.heart),
         ];
         expect(HandRank.scoreHand(hand), equals(31413120000));
@@ -134,7 +134,7 @@ void main() {
           const Card(CardRank.a, CardSuite.heart),
           const Card(CardRank.a, CardSuite.spade),
           const Card(CardRank.k, CardSuite.diamond),
-          const Card(CardRank.q, CardSuite.cross),
+          const Card(CardRank.q, CardSuite.club),
           const Card(CardRank.j, CardSuite.heart),
         ];
         expect(HandRank.scoreHand(hand), equals(21413121100));
@@ -145,7 +145,7 @@ void main() {
           const Card(CardRank.a, CardSuite.heart),
           const Card(CardRank.k, CardSuite.spade),
           const Card(CardRank.q, CardSuite.diamond),
-          const Card(CardRank.j, CardSuite.cross),
+          const Card(CardRank.j, CardSuite.club),
           const Card(CardRank.r9, CardSuite.heart),
         ];
         expect(HandRank.scoreHand(hand), equals(11413121109));
@@ -164,7 +164,7 @@ void main() {
         ];
         final community = [
           const Card(CardRank.q, CardSuite.diamond),
-          const Card(CardRank.j, CardSuite.cross),
+          const Card(CardRank.j, CardSuite.club),
           const Card(CardRank.r10, CardSuite.heart),
           const Card(CardRank.r7, CardSuite.diamond),
           const Card(CardRank.r5, CardSuite.spade),
@@ -183,13 +183,13 @@ void main() {
           const Card(CardRank.r8, CardSuite.heart),
         ];
         final p2 = TestPlayer('Player B')..hand = [
-          const Card(CardRank.k, CardSuite.cross),
-          const Card(CardRank.r6, CardSuite.cross),
+          const Card(CardRank.k, CardSuite.club),
+          const Card(CardRank.r6, CardSuite.club),
         ];
         final community = [
           const Card(CardRank.k, CardSuite.heart),
-          const Card(CardRank.r2, CardSuite.cross),
-          const Card(CardRank.r10, CardSuite.cross),
+          const Card(CardRank.r2, CardSuite.club),
+          const Card(CardRank.r10, CardSuite.club),
           const Card(CardRank.r5, CardSuite.spade),
           const Card(CardRank.j, CardSuite.heart),
         ];
@@ -207,13 +207,13 @@ void main() {
           const Card(CardRank.r8, CardSuite.heart),
         ];
         final p2 = TestPlayer('Player B')..hand = [
-          const Card(CardRank.k, CardSuite.cross),
-          const Card(CardRank.r6, CardSuite.cross),
+          const Card(CardRank.k, CardSuite.club),
+          const Card(CardRank.r6, CardSuite.club),
         ];
         final community = [
           const Card(CardRank.k, CardSuite.heart),
-          const Card(CardRank.q, CardSuite.cross),
-          const Card(CardRank.r10, CardSuite.cross),
+          const Card(CardRank.q, CardSuite.club),
+          const Card(CardRank.r10, CardSuite.club),
           const Card(CardRank.r5, CardSuite.spade),
           const Card(CardRank.j, CardSuite.heart),
         ];

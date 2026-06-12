@@ -60,7 +60,7 @@ enum CardRank {
 }
 
 enum CardSuite {
-  cross('cross', '♣'),
+  club('club', '♣'),
   diamond('diamond', '♦'),
   heart('heart', '♥'),
   spade('spade', '♠');
