@@ -1,13 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:ansi_escapes/ansi_escapes.dart';
 
-enum SpecialKey {
-  left,
-  right,
-  up,
-  down,
-}
+enum SpecialKey { left, right, up, down }
 
 class InputChar {
   final String? char;
@@ -41,9 +37,7 @@ class InputChar {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is InputChar &&
-        other.char == char &&
-        other.special == special;
+    return other is InputChar && other.char == char && other.special == special;
   }
 
   @override
@@ -69,7 +63,7 @@ class TerminalUI {
   bool _rawModeEnabled = false;
 
   TerminalUI({Stream<List<int>>? inputStream})
-      : _inputStream = inputStream ?? stdin;
+    : _inputStream = inputStream ?? stdin;
 
   List<String> _wrapLine(String line, int width) {
     if (line.isEmpty) return [''];
@@ -185,7 +179,9 @@ class TerminalUI {
           break;
         }
 
-        _inputController.add(InputChar.fromChar(String.fromCharCode(buffer[0])));
+        _inputController.add(
+          InputChar.fromChar(String.fromCharCode(buffer[0])),
+        );
         buffer.removeAt(0);
       } else {
         final charCode = buffer[0];

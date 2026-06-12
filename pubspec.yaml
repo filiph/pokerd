@@ -8,10 +8,11 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  ansi_escapes: ^2.0.1
+  ansi_escapes: ^2.0.1  # For low-level ANSI escape codes, like cursor movement
   args: ^2.7.0
   logging: ^1.2.0
   meta: ^1.8.0
+  tint: ^2.0.1  # For ANSI color support
 
 dev_dependencies:
   lints: ^6.0.0

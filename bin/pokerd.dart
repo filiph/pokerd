@@ -1,4 +1,5 @@
 import 'package:args/args.dart';
+import 'package:pokerd/src/ansi.dart';
 import 'package:pokerd/src/terminal_ui.dart';
 
 const String version = '0.0.1';
@@ -66,7 +67,7 @@ Future<void> main(List<String> arguments) async {
           '[P]lay',
           'Speed: [←] $currentSpeed [→]',
           '[Q]uit',
-        ];
+        ].map(ansi).toList();
 
         await tui.writeInPlace('menu', menuLines);
 
