@@ -1,0 +1,71 @@
+import 'dart:async';
+import 'package:pokerd/src/terminal_ui.dart';
+import 'package:test/test.dart';
+
+void main() {
+  group('InputChar', () {
+    test('predefined constants and construction', () {
+      expect(InputChar.left.isLeft, isTrue);
+      expect(InputChar.right.isRight, isTrue);
+      expect(InputChar.up.isUp, isTrue);
+      expect(InputChar.down.isDown, isTrue);
+
+      expect(InputChar.keyQ.isQ, isTrue);
+      expect(InputChar.keyP.isP, isTrue);
+
+      final qUpper = InputChar.fromChar('Q');
+      expect(qUpper.isQ, isTrue);
+      expect(qUpper, equals(InputChar.keyQ)); // 'Q' is normalized to keyQ
+
+      final normalX = InputChar.fromChar('x');
+      expect(normalX.char, equals('x'));
+      expect(normalX.isQ, isFalse);
+    });
+
+    test('equality and hashCode', () {
+      final a1 = InputChar.fromChar('a');
+      final a2 = InputChar.fromChar('a');
+      final b = InputChar.fromChar('b');
+
+      expect(a1, equals(a2));
+      expect(a1, isNot(equals(b)));
+      expect(a1.hashCode, equals(a2.hashCode));
+    });
+  });
+
+  group('TerminalUI', () {
+    late StreamController<List<int>> streamController;
+    late TerminalUI terminalUI;
+
+    setUp(() {
+      streamController = StreamController<List<int>>();
+      terminalUI = TerminalUI(inputStream: streamController.stream);
+    });
+
+    tearDown(() {
+      terminalUI.dispose();
+      streamController.close();
+    });
+
+    test('parses normal keys from input stream', () async {
+      final futureKey = terminalUI.readKey();
+      streamController.add([113]); // 'q'
+      final key = await futureKey;
+      expect(key, equals(InputChar.keyQ));
+    });
+
+    test('parses arrow keys from input stream', () async {
+      // Test left arrow
+      var futureKey = terminalUI.readKey();
+      streamController.add([27, 91, 68]); // ESC [ D
+      var key = await futureKey;
+      expect(key, equals(InputChar.left));
+
+      // Test right arrow
+      futureKey = terminalUI.readKey();
+      streamController.add([27, 91, 67]); // ESC [ C
+      key = await futureKey;
+      expect(key, equals(InputChar.right));
+    });
+  });
+}

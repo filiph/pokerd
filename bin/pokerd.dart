@@ -1,4 +1,5 @@
 import 'package:args/args.dart';
+import 'package:pokerd/src/terminal_ui.dart';
 
 const String version = '0.0.1';
 
@@ -24,7 +25,7 @@ void printUsage(ArgParser argParser) {
   print(argParser.usage);
 }
 
-void main(List<String> arguments) {
+Future<void> main(List<String> arguments) async {
   final ArgParser argParser = buildParser();
   try {
     final ArgResults results = argParser.parse(arguments);
@@ -43,10 +44,49 @@ void main(List<String> arguments) {
       verbose = true;
     }
 
-    // Act on the arguments provided.
-    print('Positional arguments: ${results.rest}');
     if (verbose) {
       print('[VERBOSE] All arguments: ${results.arguments}');
+    }
+
+    final tui = TerminalUI();
+    try {
+      await tui.write('Welcome to pokerd.\n');
+      await tui.write(
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n'
+        'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n'
+        'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi.\n',
+      );
+
+      int currentSpeed = 300;
+      tui.speed = currentSpeed;
+
+      bool running = true;
+      while (running) {
+        final menuLines = [
+          '[P]lay',
+          'Speed: [←] $currentSpeed [→]',
+          '[Q]uit',
+        ];
+
+        await tui.writeInPlace('menu', menuLines);
+
+        final key = await tui.readKey();
+
+        if (key.isP) {
+          await tui.write('Unimplemented\n');
+        } else if (key.isLeft) {
+          currentSpeed = (currentSpeed - 10).clamp(10, 1000);
+          tui.speed = currentSpeed;
+        } else if (key.isRight) {
+          currentSpeed = (currentSpeed + 10).clamp(10, 1000);
+          tui.speed = currentSpeed;
+        } else if (key.isQ) {
+          await tui.write('Bye.\n');
+          running = false;
+        }
+      }
+    } finally {
+      tui.dispose();
     }
   } on FormatException catch (e) {
     // Print usage information if an invalid argument was provided.

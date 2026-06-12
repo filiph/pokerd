@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "13.3.0"
+  ansi_escapes:
+    dependency: "direct main"
+    description:
+      name: ansi_escapes
+      sha256: dfa842a666609299fbb6ec628229e9685d7763d1af265cfd2abfdfc19ea2bd35
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.1"
   args:
     dependency: "direct main"
     description:

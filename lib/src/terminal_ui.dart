@@ -1,0 +1,225 @@
+import 'dart:async';
+import 'dart:io';
+import 'package:ansi_escapes/ansi_escapes.dart';
+
+enum SpecialKey {
+  left,
+  right,
+  up,
+  down,
+}
+
+class InputChar {
+  final String? char;
+  final SpecialKey? special;
+
+  const InputChar.char(this.char) : special = null;
+  const InputChar.special(this.special) : char = null;
+
+  static const left = InputChar.special(SpecialKey.left);
+  static const right = InputChar.special(SpecialKey.right);
+  static const up = InputChar.special(SpecialKey.up);
+  static const down = InputChar.special(SpecialKey.down);
+
+  static const keyQ = InputChar.char('q');
+  static const keyP = InputChar.char('p');
+
+  factory InputChar.fromChar(String char) {
+    final lower = char.toLowerCase();
+    if (lower == 'q') return keyQ;
+    if (lower == 'p') return keyP;
+    return InputChar.char(char);
+  }
+
+  bool get isLeft => special == SpecialKey.left;
+  bool get isRight => special == SpecialKey.right;
+  bool get isUp => special == SpecialKey.up;
+  bool get isDown => special == SpecialKey.down;
+  bool get isQ => char?.toLowerCase() == 'q';
+  bool get isP => char?.toLowerCase() == 'p';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is InputChar &&
+        other.char == char &&
+        other.special == special;
+  }
+
+  @override
+  int get hashCode => Object.hash(char, special);
+
+  @override
+  String toString() {
+    if (special != null) {
+      return 'InputChar.${special!.name}';
+    }
+    return "InputChar.char('$char')";
+  }
+}
+
+class TerminalUI {
+  final Stream<List<int>> _inputStream;
+  String? _activeKey;
+  int _activePhysicalLines = 0;
+  int speed = 300; // Characters per second
+
+  StreamSubscription<List<int>>? _stdinSub;
+  final _inputController = StreamController<InputChar>.broadcast();
+  bool _rawModeEnabled = false;
+
+  TerminalUI({Stream<List<int>>? inputStream})
+      : _inputStream = inputStream ?? stdin;
+
+  List<String> _wrapLine(String line, int width) {
+    if (line.isEmpty) return [''];
+    final List<String> chunks = [];
+    int start = 0;
+    while (start < line.length) {
+      int end = start + width;
+      if (end > line.length) {
+        end = line.length;
+      }
+      chunks.add(line.substring(start, end));
+      start = end;
+    }
+    return chunks;
+  }
+
+  Future<void> write(String text) async {
+    _activeKey = null;
+    _activePhysicalLines = 0;
+
+    final lines = text.split('\n');
+    final hasTrailingNewline = text.endsWith('\n');
+    if (hasTrailingNewline && lines.isNotEmpty && lines.last.isEmpty) {
+      lines.removeLast();
+    }
+
+    final wrapped = <String>[];
+    for (final line in lines) {
+      wrapped.addAll(_wrapLine(line, 80));
+    }
+
+    final wrappedText = wrapped.join('\n') + (hasTrailingNewline ? '\n' : '');
+    stdout.write(wrappedText);
+
+    int ms = 0;
+    if (speed > 0) {
+      ms = (text.length * 1000) ~/ speed;
+    }
+    if (ms > 0) {
+      await Future<void>.delayed(Duration(milliseconds: ms));
+    }
+  }
+
+  Future<void> writeInPlace(String key, List<String> lines) async {
+    if (_activeKey == key && _activePhysicalLines > 0) {
+      stdout.write(ansiEscapes.cursorUp(1));
+      stdout.write(ansiEscapes.eraseLines(_activePhysicalLines));
+    } else {
+      _activeKey = key;
+      _activePhysicalLines = 0;
+    }
+
+    final wrapped = <String>[];
+    for (final line in lines) {
+      wrapped.addAll(_wrapLine(line, 80));
+    }
+
+    _activePhysicalLines = wrapped.length;
+    _activeKey = key;
+
+    final output = wrapped.map((l) => '$l\n').join();
+    stdout.write(output);
+
+    final totalLength = lines.fold<int>(0, (sum, line) => sum + line.length);
+    int ms = 0;
+    if (speed > 0) {
+      ms = (totalLength * 1000) ~/ speed;
+    }
+    if (ms > 0) {
+      await Future<void>.delayed(Duration(milliseconds: ms));
+    }
+  }
+
+  void _startListening() {
+    if (_stdinSub != null) return;
+
+    if (identical(_inputStream, stdin)) {
+      try {
+        stdin.lineMode = false;
+        stdin.echoMode = false;
+        _rawModeEnabled = true;
+      } catch (_) {
+        // Safe fallback in non-interactive environments (e.g. IDE tests)
+      }
+    }
+
+    final List<int> buffer = [];
+    _stdinSub = _inputStream.listen((List<int> bytes) {
+      buffer.addAll(bytes);
+      _processBuffer(buffer);
+    });
+  }
+
+  void _processBuffer(List<int> buffer) {
+    while (buffer.isNotEmpty) {
+      if (buffer[0] == 27) {
+        if (buffer.length >= 3 && buffer[1] == 91) {
+          final code = buffer[2];
+          InputChar? key;
+          if (code == 65) key = InputChar.up;
+          if (code == 66) key = InputChar.down;
+          if (code == 67) key = InputChar.right;
+          if (code == 68) key = InputChar.left;
+
+          if (key != null) {
+            _inputController.add(key);
+            buffer.removeRange(0, 3);
+            continue;
+          }
+        }
+
+        if (buffer.length < 3) {
+          break;
+        }
+
+        _inputController.add(InputChar.fromChar(String.fromCharCode(buffer[0])));
+        buffer.removeAt(0);
+      } else {
+        final charCode = buffer[0];
+        final charStr = String.fromCharCode(charCode);
+        _inputController.add(InputChar.fromChar(charStr));
+        buffer.removeAt(0);
+      }
+    }
+  }
+
+  Future<InputChar> readKey() async {
+    _startListening();
+
+    final completer = Completer<InputChar>();
+    late StreamSubscription<InputChar> sub;
+    sub = _inputController.stream.listen((key) {
+      completer.complete(key);
+      sub.cancel();
+    });
+
+    return completer.future;
+  }
+
+  void dispose() {
+    _stdinSub?.cancel();
+    _stdinSub = null;
+    _inputController.close();
+
+    if (_rawModeEnabled) {
+      try {
+        stdin.lineMode = true;
+        stdin.echoMode = true;
+      } catch (_) {}
+      _rawModeEnabled = false;
+    }
+  }
+}
