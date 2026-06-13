@@ -107,6 +107,28 @@ void main() {
         expect(HandRank.scoreHand(hand), equals(51200000000));
       });
 
+      test('Wheel Straight (A-2-3-4-5)', () {
+        final hand = [
+          const Card(CardRank.a, CardSuite.heart),
+          const Card(CardRank.r5, CardSuite.spade),
+          const Card(CardRank.r4, CardSuite.diamond),
+          const Card(CardRank.r3, CardSuite.club),
+          const Card(CardRank.r2, CardSuite.heart),
+        ];
+        expect(HandRank.scoreHand(hand), equals(50500000000));
+      });
+
+      test('Wheel Straight Flush (A-2-3-4-5)', () {
+        final hand = [
+          const Card(CardRank.a, CardSuite.heart),
+          const Card(CardRank.r5, CardSuite.heart),
+          const Card(CardRank.r4, CardSuite.heart),
+          const Card(CardRank.r3, CardSuite.heart),
+          const Card(CardRank.r2, CardSuite.heart),
+        ];
+        expect(HandRank.scoreHand(hand), equals(90500000000));
+      });
+
       test('Three of a Kind', () {
         final hand = [
           const Card(CardRank.a, CardSuite.heart),
@@ -175,6 +197,56 @@ void main() {
         expect(winners[0].name, equals('Player 1'));
         expect(p1.bestHandRank, equals(HandRank.straight));
         expect(p1.rankSubtype, equals(': Ace high'));
+      });
+
+      test('Determine showdown winner with Wheel Straight', () {
+        final p1 = TestPlayer('Player 1')..hand = [
+          const Card(CardRank.a, CardSuite.heart),
+          const Card(CardRank.r5, CardSuite.spade),
+        ];
+        final p2 = TestPlayer('Player 2')..hand = [
+          const Card(CardRank.r2, CardSuite.heart),
+          const Card(CardRank.r3, CardSuite.spade),
+        ];
+        final community = [
+          const Card(CardRank.r2, CardSuite.diamond),
+          const Card(CardRank.r3, CardSuite.diamond),
+          const Card(CardRank.r4, CardSuite.spade),
+          const Card(CardRank.k, CardSuite.club),
+          const Card(CardRank.q, CardSuite.heart),
+        ];
+
+        final winners = HandRank.determineShowdownWinner([p1, p2], community);
+        expect(winners.length, equals(1));
+        expect(winners[0].name, equals('Player 1'));
+        expect(p1.bestHandRank, equals(HandRank.wheelStraight));
+        expect(p1.bestHandRank!.description, equals('Wheel Straight'));
+        expect(p1.rankSubtype, equals(': Five high'));
+      });
+
+      test('Determine showdown winner with Wheel Straight Flush', () {
+        final p1 = TestPlayer('Player 1')..hand = [
+          const Card(CardRank.a, CardSuite.heart),
+          const Card(CardRank.r5, CardSuite.heart),
+        ];
+        final p2 = TestPlayer('Player 2')..hand = [
+          const Card(CardRank.r2, CardSuite.spade),
+          const Card(CardRank.r3, CardSuite.spade),
+        ];
+        final community = [
+          const Card(CardRank.r2, CardSuite.heart),
+          const Card(CardRank.r3, CardSuite.heart),
+          const Card(CardRank.r4, CardSuite.heart),
+          const Card(CardRank.k, CardSuite.club),
+          const Card(CardRank.q, CardSuite.spade),
+        ];
+
+        final winners = HandRank.determineShowdownWinner([p1, p2], community);
+        expect(winners.length, equals(1));
+        expect(winners[0].name, equals('Player 1'));
+        expect(p1.bestHandRank, equals(HandRank.wheelStraightFlush));
+        expect(p1.bestHandRank!.description, equals('Wheel Straight Flush'));
+        expect(p1.rankSubtype, equals(': Five high'));
       });
 
       test('Determine showdown winner with kicker tie-breaker (One Pair)', () {

@@ -26,6 +26,10 @@ sealed class HandRank implements Comparable<HandRank> {
 
   static const RoyalFlush royalFlush = RoyalFlush();
 
+  static const WheelStraight wheelStraight = WheelStraight();
+
+  static const WheelStraightFlush wheelStraightFlush = WheelStraightFlush();
+
   static const List<HandRank> values = [
     highCard,
     onePair,
@@ -165,6 +169,12 @@ sealed class HandRank implements Comparable<HandRank> {
   }
 
   static HandRank fromScore(int score) {
+    if (score == 50500000000) {
+      return wheelStraight;
+    }
+    if (score == 90500000000) {
+      return wheelStraightFlush;
+    }
     final leadingDigit = score ~/ 10000000000;
     return fromValue(leadingDigit);
   }
@@ -444,6 +454,18 @@ sealed class HandRank implements Comparable<HandRank> {
         ..write('00000000');
       return int.parse(buffer.toString());
     }
+
+    if (uniqueCount == 5 &&
+        rankValues.contains(14) &&
+        rankValues.contains(5) &&
+        rankValues.contains(4) &&
+        rankValues.contains(3) &&
+        rankValues.contains(2)) {
+      final buffer = StringBuffer('5')
+        ..write('0500000000');
+      return int.parse(buffer.toString());
+    }
+
     return 0;
   }
 

@@ -25,11 +25,19 @@ class RoyalFlush extends HandRank {
 }
 
 class Straight extends HandRank {
-  const Straight() : super(5, 'Straight');
+  const Straight([String description = 'Straight']) : super(5, description);
+}
+
+class WheelStraight extends Straight {
+  const WheelStraight() : super('Wheel Straight');
 }
 
 class StraightFlush extends HandRank {
-  const StraightFlush() : super(9, 'Straight Flush');
+  const StraightFlush([String description = 'Straight Flush']) : super(9, description);
+}
+
+class WheelStraightFlush extends StraightFlush {
+  const WheelStraightFlush() : super('Wheel Straight Flush');
 }
 
 class ThreeOfAKind extends HandRank {
