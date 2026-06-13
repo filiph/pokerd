@@ -8,11 +8,11 @@ class TestPlayer extends Player {
   TestPlayer(super.name);
 
   @override
-  BettingMove chooseNextMove(
+  Future<BettingMove> chooseNextMove(
     int tableRaiseAmount,
     int numTimesTableRaised,
     int tableLastBet,
-  ) {
+  ) async {
     return BettingMove.checked;
   }
 }

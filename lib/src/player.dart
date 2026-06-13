@@ -68,7 +68,7 @@ abstract class Player {
     isFolded = true;
   }
 
-  BettingMove chooseNextMove(
+  Future<BettingMove> chooseNextMove(
     int tableRaiseAmount,
     int numTimesTableRaised,
     int tableLastBet,

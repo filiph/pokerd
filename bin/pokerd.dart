@@ -1,6 +1,7 @@
 import 'package:args/args.dart';
 import 'package:pokerd/src/ansi.dart';
 import 'package:pokerd/src/terminal_ui.dart';
+import 'package:pokerd/src/game.dart';
 
 const String version = '0.0.1';
 
@@ -74,7 +75,9 @@ Future<void> main(List<String> arguments) async {
         final key = await tui.readKey();
 
         if (key.isP) {
-          await tui.write('Unimplemented\n');
+          final game = Game(tui);
+          game.speed = currentSpeed;
+          await game.play();
         } else if (key.isLeft) {
           currentSpeed = (currentSpeed - 10).clamp(10, 1000);
           tui.speed = currentSpeed;
