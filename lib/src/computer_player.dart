@@ -55,7 +55,9 @@ class ComputerPlayer extends Player {
       }
     } else if (numTimesTableRaised < 4) {
       if (bet == tableLastBet) {
-        if (x <= 0.40) {
+        if (x <= 0.05) {
+          return BettingMove.allIn;
+        } else if (x <= 0.45) {
           return BettingMove.checked;
         } else if (x <= 0.90) {
           return BettingMove.bet;
@@ -63,7 +65,9 @@ class ComputerPlayer extends Player {
           return BettingMove.folded;
         }
       } else {
-        if (x <= 0.40) {
+        if (x <= 0.05) {
+          return BettingMove.allIn;
+        } else if (x <= 0.45) {
           return BettingMove.called;
         } else if (x <= 0.90) {
           return BettingMove.raised;
@@ -72,7 +76,9 @@ class ComputerPlayer extends Player {
         }
       }
     } else {
-      if (x <= 0.90) {
+      if (x <= 0.05) {
+        return BettingMove.allIn;
+      } else if (x <= 0.90) {
         return BettingMove.called;
       } else {
         return BettingMove.folded;
@@ -108,7 +114,9 @@ class ComputerPlayer extends Player {
       }
     } else if (numTimesTableRaised < 4) {
       if (bet == tableLastBet) {
-        if (x <= 0.70) {
+        if (x <= 0.02) {
+          return BettingMove.allIn;
+        } else if (x <= 0.72) {
           return BettingMove.checked;
         } else if (x <= 0.90) {
           return BettingMove.bet;
@@ -116,7 +124,9 @@ class ComputerPlayer extends Player {
           return BettingMove.folded;
         }
       } else {
-        if (x <= 0.70) {
+        if (x <= 0.02) {
+          return BettingMove.allIn;
+        } else if (x <= 0.72) {
           return BettingMove.called;
         } else if (x <= 0.90) {
           return BettingMove.raised;
@@ -125,7 +135,9 @@ class ComputerPlayer extends Player {
         }
       }
     } else {
-      if (x <= 0.90) {
+      if (x <= 0.02) {
+        return BettingMove.allIn;
+      } else if (x <= 0.90) {
         return BettingMove.called;
       } else {
         return BettingMove.folded;
@@ -161,7 +173,9 @@ class ComputerPlayer extends Player {
       }
     } else if (numTimesTableRaised < 4) {
       if (bet == tableLastBet) {
-        if (x <= 0.33) {
+        if (x <= 0.05) {
+          return BettingMove.allIn;
+        } else if (x <= 0.38) {
           return BettingMove.checked;
         } else if (x <= 0.66) {
           return BettingMove.bet;
@@ -169,7 +183,9 @@ class ComputerPlayer extends Player {
           return BettingMove.folded;
         }
       } else {
-        if (x <= 0.33) {
+        if (x <= 0.05) {
+          return BettingMove.allIn;
+        } else if (x <= 0.38) {
           return BettingMove.called;
         } else if (x <= 0.66) {
           return BettingMove.raised;
@@ -178,7 +194,9 @@ class ComputerPlayer extends Player {
         }
       }
     } else {
-      if (x <= 0.66) {
+      if (x <= 0.05) {
+        return BettingMove.allIn;
+      } else if (x <= 0.66) {
         return BettingMove.called;
       } else {
         return BettingMove.folded;
