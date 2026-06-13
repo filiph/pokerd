@@ -67,5 +67,33 @@ void main() {
       key = await futureKey;
       expect(key, equals(InputChar.right));
     });
+
+    test(
+      'writeInPlace has delay on first write but no delay on rewrite of same key',
+      () async {
+        terminalUI.speed = 1000; // 1000 cps -> 1 ms per character
+
+        final lines = ['a' * 100]; // 100 characters
+
+        // First write of key 'test' should have delay
+        final sw1 = Stopwatch()..start();
+        await terminalUI.writeInPlace('test', lines);
+        sw1.stop();
+
+        // Second write of key 'test' should not have delay (rewrite)
+        final sw2 = Stopwatch()..start();
+        await terminalUI.writeInPlace('test', lines);
+        sw2.stop();
+
+        expect(
+          sw1.elapsedMilliseconds,
+          greaterThanOrEqualTo(80),
+        ); // Should be ~100ms
+        expect(
+          sw2.elapsedMilliseconds,
+          lessThan(30),
+        ); // Should be ~0ms (immediate)
+      },
+    );
   });
 }

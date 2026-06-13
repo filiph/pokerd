@@ -108,7 +108,8 @@ class TerminalUI {
   }
 
   Future<void> writeInPlace(String key, List<String> lines) async {
-    if (_activeKey == key && _activePhysicalLines > 0) {
+    final isRewrite = _activeKey == key && _activePhysicalLines > 0;
+    if (isRewrite) {
       stdout.write(ansiEscapes.cursorUp(1));
       stdout.write(ansiEscapes.eraseLines(_activePhysicalLines));
     } else {
@@ -129,7 +130,7 @@ class TerminalUI {
 
     final totalLength = lines.fold<int>(0, (sum, line) => sum + line.length);
     int ms = 0;
-    if (speed > 0) {
+    if (!isRewrite && speed > 0) {
       ms = (totalLength * 1000) ~/ speed;
     }
     if (ms > 0) {
