@@ -75,5 +75,44 @@ void main() {
       expect(move, equals(BettingMove.bet));
       expect(player.customBet, equals(250));
     });
+
+    test('can choose all-in when normal bet is available', () async {
+      player.chips = 1000;
+      player.bet = 0;
+
+      final futureMove = player.chooseNextMove(200, 0, 0);
+
+      // Simulate 'A' to go all-in
+      streamController.add([97]); // 'a'
+
+      final move = await futureMove;
+      expect(move, equals(BettingMove.allIn));
+    });
+
+    test('can choose all-in when normal raise is available', () async {
+      player.chips = 1000;
+      player.bet = 100;
+
+      final futureMove = player.chooseNextMove(300, 1, 200);
+
+      // Simulate 'A' to go all-in
+      streamController.add([97]); // 'a'
+
+      final move = await futureMove;
+      expect(move, equals(BettingMove.allIn));
+    });
+
+    test('can choose all-in when raised limit of 4 is reached', () async {
+      player.chips = 1000;
+      player.bet = 100;
+
+      final futureMove = player.chooseNextMove(300, 4, 200);
+
+      // Simulate 'A' to go all-in
+      streamController.add([97]); // 'a'
+
+      final move = await futureMove;
+      expect(move, equals(BettingMove.allIn));
+    });
   });
 }
