@@ -64,17 +64,22 @@ class Game {
   Future<void> play() async {
     while (true) {
       await resetForNextRound();
-      for (final phaseVal in Phase.values) {
-        phase = phaseVal;
-        await dealCards();
-        await runRoundOfBetting();
-        if (checkHandOver()) {
+      try {
+        for (final phaseVal in Phase.values) {
+          phase = phaseVal;
+          await dealCards();
+          await runRoundOfBetting();
+          if (checkHandOver()) {
+            break;
+          }
+        }
+        await determineWinners();
+        table.handsPlayed += 1;
+        if (await checkGameOver()) {
           break;
         }
-      }
-      await determineWinners();
-      table.handsPlayed += 1;
-      if (await checkGameOver()) {
+      } on _QuitException {
+        // Player chose to quit during their turn.
         break;
       }
     }
@@ -365,11 +370,18 @@ class Game {
         if (char == 'o') {
           await tui.writeInPlace('human_prompt', [
             '',
-            ansi('  > Options: [H]elp   [any] key to go back'),
+            ansi('  > Options: [Q]uit   [H]elp   [any] key to go back'),
           ]);
           final key = await tui.readKey();
-          if (key.char?.toLowerCase() == 'h') {
-            await showRankingsHelp();
+          switch (key.char?.toLowerCase()) {
+            case 'q':
+              await tui.writeInPlace('human_prompt', ['', 'Ending game.', '']);
+              throw _QuitException();
+            case 'h':
+              await showRankingsHelp();
+            default:
+              // Pass.
+              break;
           }
           continue;
         }
@@ -899,4 +911,8 @@ class Game {
       );
     }
   }
+}
+
+class _QuitException implements Exception {
+  const _QuitException();
 }
