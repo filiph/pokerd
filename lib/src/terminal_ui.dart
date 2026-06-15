@@ -4,6 +4,9 @@ import 'dart:math';
 
 import 'package:ansi_escapes/ansi_escapes.dart';
 import 'package:pokerd/src/ansi.dart';
+import 'package:tint/tint.dart';
+
+import 'card.dart';
 
 enum SpecialKey { left, right, up, down }
 
@@ -257,5 +260,43 @@ class TerminalUI {
       } catch (_) {}
       _rawModeEnabled = false;
     }
+  }
+
+  static String formatCard(
+    Card card, {
+    required bool showFace,
+    required bool useColor,
+  }) {
+    if (!showFace) {
+      return '[###]';
+    }
+
+    final suiteStr = card.suite.symbol;
+    late final String coloredSuite = switch (card.suite) {
+      .club => suiteStr.green(),
+      .diamond => suiteStr.cyan(),
+      .heart => suiteStr.red(),
+      .spade => suiteStr.yellow(),
+    };
+    return '[${card.rank.symbol.padRight(2, ' ')}'
+        '${useColor ? coloredSuite : suiteStr}]';
+  }
+
+  static String formatHand(
+    List<Card> hand, {
+    required bool showFace,
+    required bool useColor,
+    bool empty = false,
+  }) {
+    const separator = '  ';
+
+    if (empty) {
+      return '${' ' * 5}$separator${' ' * 5}';
+    }
+
+    final handStr = hand
+        .map((card) => formatCard(card, showFace: showFace, useColor: useColor))
+        .join(separator);
+    return handStr;
   }
 }

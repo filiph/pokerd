@@ -1,10 +1,8 @@
 import 'dart:math';
 
 import 'package:pokerd/src/ansi.dart';
-import 'package:tint/tint.dart';
 
 import 'betting_move.dart';
-import 'card.dart';
 import 'computer_player.dart';
 import 'deck.dart';
 import 'hand_rank.dart';
@@ -112,10 +110,6 @@ class Game {
     await showShuffling();
   }
 
-  void _setGameSpeed({required bool isFast}) {
-    tui.speed = isFast ? 10000 : speed;
-  }
-
   void assignPositions() {
     for (final player in getActivePlayers()) {
       player.isSB = false;
@@ -185,6 +179,15 @@ class Game {
         final cards = deck.deal(1);
         player.hand.addAll(cards);
       }
+    }
+
+    if (hasActiveHumanPlayerInRound) {
+      final humanPlayer =
+          players.firstWhere((p) => p is HumanPlayer) as HumanPlayer;
+      await tui.write(
+        '${humanPlayer.name} got:  '
+        '${TerminalUI.formatHand(humanPlayer.hand, showFace: true, useColor: useColor)}\n\n',
+      );
     }
   }
 
@@ -395,18 +398,6 @@ class Game {
     }
   }
 
-  String cardStr(Card card) {
-    final suiteStr = card.suite.symbol;
-    late final String coloredSuite = switch (card.suite) {
-      .club => suiteStr.green(),
-      .diamond => suiteStr.cyan(),
-      .heart => suiteStr.red(),
-      .spade => suiteStr.yellow(),
-    };
-    return '[${card.rank.symbol.padRight(2, ' ')}'
-        '${useColor ? coloredSuite : suiteStr}]';
-  }
-
   Future<void> showShuffling() async {
     await tui.write('Deck is being shuffled...\n\n');
   }
@@ -497,23 +488,14 @@ class Game {
       if (!player.isInGame) {
         strBuf.write('[OUT OF GAME]');
       } else {
-        final handStr = <String>[];
-        if (player.isFolded || player.hand.isEmpty) {
-          handStr.addAll(['     ', '     ']);
-        } else if (player is HumanPlayer) {
-          for (final card in player.hand) {
-            handStr.add(cardStr(card));
-          }
-        } else if (isShowdown) {
-          for (final card in player.hand) {
-            handStr.add(cardStr(card));
-          }
-        } else {
-          for (var i = 0; i < player.hand.length; i++) {
-            handStr.add('[###]');
-          }
-        }
-        strBuf.write(handStr.join('  '));
+        strBuf.write(
+          TerminalUI.formatHand(
+            player.hand,
+            showFace: player is HumanPlayer || isShowdown,
+            empty: player.isFolded || player.hand.isEmpty,
+            useColor: useColor,
+          ),
+        );
 
         strBuf.write('   ');
 
@@ -553,7 +535,11 @@ class Game {
     }
     await tui.write('\n');
 
-    final communityCards = table.community.map(cardStr).join('  ');
+    final communityCards = TerminalUI.formatHand(
+      table.community,
+      showFace: true,
+      useColor: useColor,
+    );
     await tui.write(
       '${'Community'.padLeft(12)}:   $communityCards\n\n',
       speedOverride: 1000,
@@ -612,13 +598,19 @@ class Game {
     }
     if (handWinners.length == 1) {
       final winner = handWinners[0];
-      final handStr = winner.bestHandCards.map(cardStr).join('  ');
+      final handStr = TerminalUI.formatHand(
+        winner.bestHandCards,
+        showFace: true,
+        useColor: useColor,
+      );
       final rankStr = winner.bestHandRank?.description ?? '';
       await tui.write(
         '           $handStr      ${winner.name} won $potType with a $rankStr${winner.rankSubtype}!\n',
       );
       if (winner.kickerCard != null) {
-        final kickerStr = 'Kicker card was the ${cardStr(winner.kickerCard!)}';
+        final kickerStr =
+            'Kicker card was the '
+            '${TerminalUI.formatCard(winner.kickerCard!, showFace: true, useColor: useColor)}';
         await tui.write('${kickerStr.padLeft(75)}\n\n');
       } else {
         await tui.write('\n');
@@ -626,7 +618,11 @@ class Game {
     } else {
       for (var i = 0; i < handWinners.length; i++) {
         final winner = handWinners[i];
-        final handStr = winner.bestHandCards.map(cardStr).join('  ');
+        final handStr = TerminalUI.formatHand(
+          winner.bestHandCards,
+          showFace: true,
+          useColor: useColor,
+        );
         await tui.write('           $handStr      ${winner.name}\n');
         if (i == handWinners.length - 1) {
           final rankStr = winner.bestHandRank?.description ?? '';
