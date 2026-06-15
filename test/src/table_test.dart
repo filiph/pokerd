@@ -127,7 +127,8 @@ void main() {
     test('test_updateRaiseAmount_preflop', () {
       final table = Table()
         ..bigBlind = 200
-        ..lastBet = 300;
+        ..lastBet = 300
+        ..minRaiseIncrement = 200;
       table.updateRaiseAmount(Phase.preflop);
       expect(table.raiseAmount, equals(500));
     });
@@ -135,9 +136,52 @@ void main() {
     test('test_updateRaiseAmount_turn', () {
       final table = Table()
         ..bigBlind = 200
-        ..lastBet = 300;
+        ..lastBet = 300
+        ..minRaiseIncrement = 400;
       table.updateRaiseAmount(Phase.turn);
       expect(table.raiseAmount, equals(700));
+    });
+
+    test('test_takeBet_normal_raise_updates_minRaiseIncrement', () {
+      final player = MockConcretePlayerClass('Alice')..chips = 1000;
+      final table = Table()
+        ..bigBlind = 200
+        ..minRaiseIncrement = 200
+        ..raiseAmount = 300 // Raise from 100 to 300
+        ..lastBet = 100;
+        
+      table.takeBet(player, BettingMove.raised);
+      
+      expect(table.lastBet, equals(300));
+      expect(table.minRaiseIncrement, equals(200));
+      expect(table.lastRaiseWasFull, isTrue);
+      expect(table.numTimesRaised, equals(1));
+    });
+
+    test('test_takeBet_allIn_full_raise', () {
+      final player = MockConcretePlayerClass('Alice')..chips = 500;
+      final table = Table()
+        ..lastBet = 100
+        ..minRaiseIncrement = 200;
+        
+      table.takeBet(player, BettingMove.allIn);
+      
+      expect(table.lastBet, equals(500));
+      expect(table.minRaiseIncrement, equals(400), reason: 'All-in for 500 when lastBet was 100 is a raise of 400');
+      expect(table.lastRaiseWasFull, isTrue);
+    });
+
+    test('test_takeBet_allIn_partial_raise', () {
+      final player = MockConcretePlayerClass('Alice')..chips = 250;
+      final table = Table()
+        ..lastBet = 200
+        ..minRaiseIncrement = 200;
+        
+      table.takeBet(player, BettingMove.allIn);
+      
+      expect(table.lastBet, equals(250));
+      expect(table.minRaiseIncrement, equals(200), reason: 'Partial raise should not update minRaiseIncrement');
+      expect(table.lastRaiseWasFull, isFalse);
     });
   });
 }

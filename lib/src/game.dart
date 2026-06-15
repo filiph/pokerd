@@ -207,6 +207,8 @@ class Game {
 
   Future<void> runRoundOfBetting() async {
     table.numTimesRaised = 0;
+    table.lastBet = 0;
+    table.minRaiseIncrement = table.bigBlind;
     final active = getActivePlayers();
     if (phase == Phase.preflop) {
       await runSmallBlindBet();
@@ -290,12 +292,23 @@ class Game {
           (move == BettingMove.bet || move == BettingMove.raised)) {
         table.raiseAmount = bettingPlayer.customBet;
       }
+      final oldLastBet = table.lastBet;
       table.takeBet(bettingPlayer, move);
       await showPlayerMove(bettingPlayer, move, bettingPlayer.bet);
-      if (move == BettingMove.raised || move == BettingMove.bet) {
+      if (table.lastBet > oldLastBet) {
         for (final activePlayer in activePlayers) {
           if (!activePlayer.isFolded) {
-            activePlayer.isLocked = false;
+            if (table.lastRaiseWasFull) {
+              activePlayer.isLocked = false;
+              activePlayer.onlyCallOrFold = false;
+            } else {
+              if (activePlayer.bet < table.lastBet) {
+                if (activePlayer.isLocked) {
+                  activePlayer.onlyCallOrFold = true;
+                }
+                activePlayer.isLocked = false;
+              }
+            }
           }
         }
         for (final person in activePlayers) {
@@ -305,6 +318,7 @@ class Game {
         }
       }
       bettingPlayer.isLocked = true;
+      bettingPlayer.onlyCallOrFold = false; // Reset after they acted
       bettingIndex += 1;
     }
   }
@@ -328,7 +342,7 @@ class Game {
           validMoves = ['c', 'a', 'f'];
           prompt = '> [C]all ${table.lastBet}¤  [A]ll-in   [F]old   [O]ptions';
         }
-      } else if (table.numTimesRaised < 4) {
+      } else if (table.numTimesRaised < 4 && !player.onlyCallOrFold) {
         canAdjust = true;
         if (player.bet == table.lastBet) {
           validMoves = ['c', 'b', 'a', 'f'];
@@ -469,8 +483,24 @@ class Game {
         showdownPlayers,
         table.community,
       );
+      final share = table.pots[i].amount ~/ handWinners.length;
+      var remainder = table.pots[i].amount % handWinners.length;
+
       for (final winner in handWinners) {
-        winner.chips += table.pots[i].amount ~/ handWinners.length;
+        winner.chips += share;
+      }
+
+      if (remainder > 0) {
+        final active = getActivePlayers();
+        final dealerIndex = active.indexOf(dealer!);
+        for (var j = 1; j <= active.length; j++) {
+          final player = active[(dealerIndex + j) % active.length];
+          if (handWinners.contains(player)) {
+            player.chips += 1;
+            remainder -= 1;
+            if (remainder == 0) break;
+          }
+        }
       }
       await showShowdownResults(handWinners, showdownPlayers, i);
     }

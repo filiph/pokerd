@@ -13,6 +13,7 @@ abstract class Player {
   bool isLocked = false;
   bool isAllIn = false;
   bool isInGame = true;
+  bool onlyCallOrFold = false;
   List<Card> bestHandCards = [];
   int bestHandScore = 0;
   HandRank? bestHandRank;
@@ -30,6 +31,7 @@ abstract class Player {
     isFolded = false;
     isAllIn = false;
     isLocked = false;
+    onlyCallOrFold = false;
     bestHandCards = [];
     bestHandScore = 0;
     bestHandRank = null;

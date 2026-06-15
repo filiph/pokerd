@@ -21,6 +21,8 @@ class Table {
   int bigBlind = 0;
   int raiseAmount = 0;
   int numTimesRaised = 0;
+  int minRaiseIncrement = 0;
+  bool lastRaiseWasFull = false;
 
   Table();
 
@@ -33,7 +35,9 @@ class Table {
     if (checkIncreaseBigBlind()) {
       bigBlind *= 2;
     }
+    minRaiseIncrement = bigBlind;
     raiseAmount = bigBlind;
+    lastRaiseWasFull = false;
   }
 
   bool checkIncreaseBigBlind() {
@@ -73,17 +77,32 @@ class Table {
   }
 
   void takeBet(Player player, BettingMove move) {
+    final oldLastBet = lastBet;
     if (move == BettingMove.checked || move == BettingMove.called) {
       lastBet = player.matchBet(lastBet);
+      // Calling doesn't count as a raise, obviously.
     } else if (move == BettingMove.raised || move == BettingMove.bet) {
       numTimesRaised += 1;
       lastBet = player.matchBet(raiseAmount);
+      final raiseDone = lastBet - oldLastBet;
+      if (raiseDone > minRaiseIncrement) {
+        minRaiseIncrement = raiseDone;
+      }
+      lastRaiseWasFull = true;
     } else if (move == BettingMove.allIn) {
       player.goAllIn();
       potTransfers.add(player.bet);
       // Prevent multiple side pots being created if players go all-in at same amount in same phase
       potTransfers = potTransfers.toSet().toList();
       if (player.bet > lastBet) {
+        final raiseDone = player.bet - lastBet;
+        if (raiseDone >= minRaiseIncrement) {
+          minRaiseIncrement = raiseDone;
+          numTimesRaised += 1;
+          lastRaiseWasFull = true;
+        } else {
+          lastRaiseWasFull = false;
+        }
         lastBet = player.bet;
       }
     } else {
@@ -92,11 +111,7 @@ class Table {
   }
 
   void updateRaiseAmount(Phase phase) {
-    if (phase == Phase.preflop || phase == Phase.flop) {
-      raiseAmount = lastBet + bigBlind;
-    } else if (phase == Phase.turn || phase == Phase.river) {
-      raiseAmount = lastBet + (bigBlind * 2);
-    }
+    raiseAmount = lastBet + minRaiseIncrement;
   }
 
   void calculateSidePots(List<Player> activePlayers) {
