@@ -58,6 +58,8 @@ class InputChar {
 }
 
 class TerminalUI {
+  static final _ansiRegex = RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]');
+
   final Stream<List<int>> _inputStream;
   final StringSink _outputSink;
   String? _activeKey;
@@ -91,15 +93,34 @@ class TerminalUI {
   List<String> _wrapLine(String line, int width) {
     if (line.isEmpty) return [''];
     final List<String> chunks = [];
+
+    int currentVisibleWidth = 0;
     int start = 0;
-    while (start < line.length) {
-      int end = start + width;
-      if (end > line.length) {
-        end = line.length;
+
+    for (int i = 0; i < line.length; i++) {
+      // Check for ANSI escape sequence
+      if (line.codeUnitAt(i) == 27 && i + 1 < line.length && line[i + 1] == '[') {
+        final match = _ansiRegex.matchAsPrefix(line, i);
+        if (match != null) {
+          i = match.end - 1; // Skip the ANSI sequence
+          continue;
+        }
       }
-      chunks.add(line.substring(start, end));
-      start = end;
+
+      currentVisibleWidth++;
+      if (currentVisibleWidth == width) {
+        chunks.add(line.substring(start, i + 1));
+        start = i + 1;
+        currentVisibleWidth = 0;
+      }
     }
+
+    if (start < line.length) {
+      chunks.add(line.substring(start));
+    } else if (chunks.isEmpty) {
+      chunks.add('');
+    }
+
     return chunks;
   }
 
