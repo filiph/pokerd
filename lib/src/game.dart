@@ -445,7 +445,7 @@ class Game {
       }
       final winner = unfoldedPlayers[0];
       winner.chips += winnings;
-      await showDefaultWinnerFold(winner.name);
+      await showDefaultWinnerFold(winner.name, winnings);
     } else {
       final playersEligibleLastPot = <Player>[];
       for (final player in table.pots.last.players) {
@@ -455,11 +455,13 @@ class Game {
       }
       if (playersEligibleLastPot.length == 1) {
         final handWinner = playersEligibleLastPot[0];
+        final amount = table.pots.last.amount;
         await showDefaultWinnerEligibility(
           handWinner.name,
           table.pots.length - 1,
+          amount,
         );
-        handWinner.chips += table.pots.last.amount;
+        handWinner.chips += amount;
         table.pots.removeLast();
       }
       while (table.community.length < 5) {
@@ -500,7 +502,7 @@ class Game {
           }
         }
       }
-      await showShowdownResults(handWinners, showdownPlayers, i);
+      await showShowdownResults(handWinners, showdownPlayers, i, share);
     }
   }
 
@@ -554,22 +556,22 @@ class Game {
     final bool importantMove;
     switch (move) {
       case BettingMove.folded:
-        await tui.write('${player.name} folded! ×\n\n');
+        await tui.write('${player.name} folds.\n\n');
         importantMove = true;
       case BettingMove.checked:
-        await tui.write('${player.name} checked. √\n\n');
+        await tui.write('${player.name} checks.\n\n');
         importantMove = false;
       case BettingMove.allIn:
-        await tui.write('${player.name} went all-in!\n\n');
+        await tui.write('${player.name} goes all-in!\n\n');
         importantMove = true;
       case BettingMove.called:
-        await tui.write('${player.name} called ${player.bet}¤. ←→\n\n');
+        await tui.write('${player.name} calls.\n\n');
         importantMove = false;
       case BettingMove.bet:
-        await tui.write('${player.name} bet ${player.bet}¤. ↑\n\n');
+        await tui.write('${player.name} bets ${player.bet}¤.\n\n');
         importantMove = true;
       case BettingMove.raised:
-        await tui.write('${player.name} raised to ${player.bet}¤. ↑\n\n');
+        await tui.write('${player.name} raises to ${player.bet}¤.\n\n');
         importantMove = true;
     }
 
@@ -581,23 +583,24 @@ class Game {
   }
 
   Future<void> showBetBlind(String playerName, String blindSize) async {
-    await tui.write('$playerName bet the $blindSize blind\n\n');
+    await tui.write('$playerName bets the $blindSize blind\n\n');
   }
 
-  Future<void> showDefaultWinnerFold(String playerName) async {
-    await tui.write('All other players folded...\n');
-    await tui.write('$playerName won the pot!\n\n');
+  Future<void> showDefaultWinnerFold(String playerName, int amount) async {
+    await tui.write('All other players fold.\n');
+    await tui.write('$playerName wins ${amount}¤.\n\n');
     await tui.waitForAnyKey();
   }
 
   Future<void> showDefaultWinnerEligibility(
     String playerName,
     int sidePotNum,
+    int amount,
   ) async {
     await tui.write(
       '\n$playerName is the only player eligible for SIDE POT #$sidePotNum.\n',
     );
-    await tui.write('Gave those chips to $playerName.\n\n');
+    await tui.write('$playerName wins ${amount}¤.\n\n');
     await tui.waitForAnyKey();
   }
 
@@ -722,9 +725,10 @@ class Game {
     List<Player> handWinners,
     List<Player> showdownPlayers,
     int potNum,
+    int amountPerWinner,
   ) async {
     await showTable(isShowdown: true);
-    await showPotWinners(handWinners, showdownPlayers, potNum);
+    await showPotWinners(handWinners, showdownPlayers, potNum, amountPerWinner);
     await tui.waitForAnyKey();
   }
 
@@ -732,6 +736,7 @@ class Game {
     List<Player> handWinners,
     List<Player> showdownPlayers,
     int potNum,
+    int amountPerWinner,
   ) async {
     var potType = 'the pot';
     if (potNum > 0) {
@@ -750,7 +755,7 @@ class Game {
       );
       final rankStr = winner.bestHandRank?.description ?? '';
       await tui.write(
-        '           $handStr      ${winner.name} won $potType with a $rankStr${winner.rankSubtype}!\n',
+        '           $handStr      ${winner.name} wins ${amountPerWinner}¤ with a $rankStr${winner.rankSubtype}!\n',
       );
       if (winner.kickerCard != null) {
         final kickerStr =
@@ -768,7 +773,7 @@ class Game {
           showFace: true,
           useColor: useColor,
         );
-        await tui.write('           $handStr      ${winner.name}\n');
+        await tui.write('           $handStr      ${winner.name} wins ${amountPerWinner}¤\n');
         if (i == handWinners.length - 1) {
           final rankStr = winner.bestHandRank?.description ?? '';
           await tui.write(
@@ -805,7 +810,7 @@ class Game {
       winnersStr =
           '${winnersNames.sublist(0, winnersNames.length - 1).join(', ')}, and ${winnersNames.last}';
     }
-    await tui.write('   $winnersStr won the game!\n\n');
+    await tui.write('   $winnersStr wins the game!\n\n');
     await tui.write('========================================\n');
     await tui.write('               GAME OVER                \n');
     await tui.write('========================================\n\n');

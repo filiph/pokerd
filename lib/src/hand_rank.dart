@@ -46,15 +46,15 @@ sealed class HandRank implements Comparable<HandRank> {
   ];
 
   static const Map<int, String> _cardIntStrDict = {
-    2: 'Two',
-    3: 'Three',
-    4: 'Four',
-    5: 'Five',
-    6: 'Six',
-    7: 'Seven',
-    8: 'Eight',
-    9: 'Nine',
-    10: 'Ten',
+    2: '2',
+    3: '3',
+    4: '4',
+    5: '5',
+    6: '6',
+    7: '7',
+    8: '8',
+    9: '9',
+    10: '10',
     11: 'Jack',
     12: 'Queen',
     13: 'King',
@@ -102,37 +102,37 @@ sealed class HandRank implements Comparable<HandRank> {
         case StraightFlush() || Straight():
           final highCardVal = int.parse(scoreStr.substring(1, 3));
           final highCard = _cardIntStrDict[highCardVal];
-          player.rankSubtype = ': $highCard high';
+          player.rankSubtype = ' ($highCard high)';
         case FullHouse():
           final tripletVal = int.parse(scoreStr.substring(1, 3));
           final pairVal = int.parse(scoreStr.substring(3, 5));
           final tripletCard = _cardIntStrDict[tripletVal];
           final pairCard = _cardIntStrDict[pairVal];
-          final tripletStr = tripletCard == 'Six' ? 'Sixes' : '${tripletCard}s';
-          final pairStr = pairCard == 'Six' ? 'Sixes' : '${pairCard}s';
-          player.rankSubtype = ': $tripletStr over $pairStr';
+          final tripletStr = '${tripletCard}s';
+          final pairStr = '${pairCard}s';
+          player.rankSubtype = ' of $tripletStr over $pairStr';
         case TwoPair():
           final higherVal = int.parse(scoreStr.substring(1, 3));
           final lowerVal = int.parse(scoreStr.substring(3, 5));
           final higherPair = _cardIntStrDict[higherVal];
           final lowerPair = _cardIntStrDict[lowerVal];
-          final higherStr = higherPair == 'Six' ? 'Sixes' : '${higherPair}s';
-          final lowerStr = lowerPair == 'Six' ? 'Sixes' : '${lowerPair}s';
-          player.rankSubtype = ': $higherStr and $lowerStr';
+          final higherStr = '${higherPair}s';
+          final lowerStr = '${lowerPair}s';
+          player.rankSubtype = ' of $higherStr and $lowerStr';
         case OnePair():
           final pairVal = int.parse(scoreStr.substring(1, 3));
           final pairCard = _cardIntStrDict[pairVal];
-          final pairStr = pairCard == 'Six' ? 'Sixes' : '${pairCard}s';
-          player.rankSubtype = ': $pairStr';
+          final pairStr = '${pairCard}s';
+          player.rankSubtype = ' of $pairStr';
         case FourOfAKind() || ThreeOfAKind():
           final tupleVal = int.parse(scoreStr.substring(1, 3));
           final tupleCard = _cardIntStrDict[tupleVal];
-          final tupleStr = tupleCard == 'Six' ? 'Sixes' : '${tupleCard}s';
-          player.rankSubtype = ': $tupleStr';
+          final tupleStr = '${tupleCard}s';
+          player.rankSubtype = ' of $tupleStr';
         case HighCard():
           final highCardVal = int.parse(scoreStr.substring(1, 3));
           final highCard = _cardIntStrDict[highCardVal];
-          player.rankSubtype = ': $highCard';
+          player.rankSubtype = ' ($highCard high)';
         case RoyalFlush() || Flush():
           break;
       }

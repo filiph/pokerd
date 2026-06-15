@@ -188,7 +188,7 @@ void main() {
         expect(winners.length, equals(1));
         expect(winners[0].name, equals('Player 1'));
         expect(p1.bestHandRank, equals(HandRank.straight));
-        expect(p1.rankSubtype, equals(': Ace high'));
+        expect(p1.rankSubtype, equals(' (Ace high)'));
       });
 
       test('Determine showdown winner with Wheel Straight', () {
@@ -215,7 +215,7 @@ void main() {
         expect(winners[0].name, equals('Player 1'));
         expect(p1.bestHandRank, equals(HandRank.wheelStraight));
         expect(p1.bestHandRank!.description, equals('Wheel Straight'));
-        expect(p1.rankSubtype, equals(': Five high'));
+        expect(p1.rankSubtype, equals(' (5 high)'));
       });
 
       test('Determine showdown winner with Wheel Straight Flush', () {
@@ -242,7 +242,7 @@ void main() {
         expect(winners[0].name, equals('Player 1'));
         expect(p1.bestHandRank, equals(HandRank.wheelStraightFlush));
         expect(p1.bestHandRank!.description, equals('Wheel Straight Flush'));
-        expect(p1.rankSubtype, equals(': Five high'));
+        expect(p1.rankSubtype, equals(' (5 high)'));
       });
 
       test('Determine showdown winner with kicker tie-breaker (One Pair)', () {
@@ -303,20 +303,20 @@ void main() {
     });
 
     group('Subtype Formatting Spells', () {
-      test('Sixes formatting for Full House', () {
+      test('6s formatting for Full House', () {
         final p = TestPlayer('Player 1')
           ..bestHandScore = 70611000000
           ..bestHandRank = HandRank.fullHouse;
         HandRank.assignHandrankSubtypes([p]);
-        expect(p.rankSubtype, equals(': Sixes over Jacks'));
+        expect(p.rankSubtype, equals(' of 6s over Jacks'));
       });
 
-      test('Sixes formatting for Two Pair', () {
+      test('6s formatting for Two Pair', () {
         final p = TestPlayer('Player 1')
           ..bestHandScore = 31106020000
           ..bestHandRank = HandRank.twoPair;
         HandRank.assignHandrankSubtypes([p]);
-        expect(p.rankSubtype, equals(': Jacks and Sixes'));
+        expect(p.rankSubtype, equals(' of Jacks and 6s'));
       });
     });
   });

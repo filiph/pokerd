@@ -17,7 +17,7 @@ class HighCard extends HandRank {
 }
 
 class OnePair extends HandRank {
-  const OnePair() : super(2, 'One Pair');
+  const OnePair() : super(2, 'Pair');
 }
 
 class RoyalFlush extends HandRank {
