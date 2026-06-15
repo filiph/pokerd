@@ -59,13 +59,9 @@ Future<void> main(List<String> arguments) async {
 
       bool running = true;
       while (running) {
-        final menuLines = [
-          '[P]lay',
-          'Speed: [←] $currentSpeed [→]',
-          '[Q]uit',
-        ].map(ansi).toList();
-
-        await tui.writeInPlace('menu', menuLines);
+        await tui.writeInPlace('menu', [
+          ansi('> [P]lay  Speed: [←]$currentSpeed[→]   [Q]uit'),
+        ]);
 
         final key = await tui.readKey();
 

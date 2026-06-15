@@ -1,7 +1,7 @@
-import 'player.dart';
-import 'betting_move.dart';
-import 'terminal_ui.dart';
 import 'ansi.dart';
+import 'betting_move.dart';
+import 'player.dart';
+import 'terminal_ui.dart';
 
 class HumanPlayer extends Player {
   final TerminalUI tui;
@@ -27,30 +27,28 @@ class HumanPlayer extends Player {
         // If not enough chips to call
         if (chips <= (bet - tableLastBet).abs()) {
           validMoves = ['f', 'a'];
-          prompt = ' >>> Press [A] to go all-in or [F] to fold.';
+          prompt = '> [A]ll-in   [F]old';
         } else {
           validMoves = ['c', 'a', 'f'];
-          prompt =
-              ' >>> Press [C] to call $tableLastBet chips, [A] to go all-in, or [F] to fold.';
+          prompt = '> [C]all $tableLastBet chips  [A]ll-in   [F]old';
         }
       } else if (numTimesTableRaised < 4) {
         canAdjust = true;
         if (bet == tableLastBet) {
           validMoves = ['c', 'b', 'a', 'f'];
           prompt =
-              ' >>> Use [←]/[→] to adjust bet. Press [C] to check, [B] to bet $customBet chips, [A] to go all-in, or [F] to fold.';
+              '> [C]heck   [B]et [←]$customBet[→] chips   [A]ll-in   [F]old';
         } else {
           validMoves = ['c', 'r', 'a', 'f'];
           prompt =
-              ' >>> Use [←]/[→] to adjust raise. Press [C] to call $tableLastBet chips, [R] to raise to $customBet chips, [A] to go all-in, or [F] to fold.';
+              '> [C]all $tableLastBet chips   [R]aise to [←]$customBet[→] chips   [A]ll-in   [F]old';
         }
       } else {
         validMoves = ['c', 'a', 'f'];
-        prompt =
-            ' >>> Press [C] to call $tableLastBet chips, [A] to go all-in, or [F] to fold.';
+        prompt = '> [C]all $tableLastBet chips   [A]ll-in   [F]old';
       }
 
-      final underlinedPrompt = ansi('\n$prompt\n\n');
+      final underlinedPrompt = ansi('\n$prompt');
       final linesToPrint = underlinedPrompt.split('\n');
       await tui.writeInPlace('human_prompt', linesToPrint);
 

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:ansi_escapes/ansi_escapes.dart';
+import 'package:pokerd/src/ansi.dart';
 
 enum SpecialKey { left, right, up, down }
 
@@ -236,6 +237,12 @@ class TerminalUI {
     });
 
     return completer.future;
+  }
+
+  Future<void> waitForAnyKey() async {
+    await writeInPlace('__any_key', [ansi('Press [any] key.')]);
+    await readKey();
+    await writeInPlace('__any_key', []);
   }
 
   void dispose() {

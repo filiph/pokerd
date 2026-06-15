@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:pokerd/src/ansi.dart';
 import 'package:tint/tint.dart';
 
 import 'betting_move.dart';
@@ -375,21 +376,24 @@ class Game {
       await showGameWinners([active[0].name]);
       return true;
     } else {
-      while (true) {
-        await tui.write(
-          ' >>> Continue on to next hand? Press [Enter] to continue or [N] to stop.\n\n',
-        );
-        final key = await tui.readKey();
-        final char = key.char?.toLowerCase();
-        if (char == 'n') {
-          final maxChips = active.map((p) => p.chips).reduce(max);
-          final winnersNames = active
-              .where((p) => p.chips == maxChips)
-              .map((p) => p.name)
-              .toList();
-          await showGameWinners(winnersNames);
-          return true;
-        }
+      const tuiKey = 'press_to_continue';
+      await tui.writeInPlace(tuiKey, [
+        '> Continue on to next hand?',
+        ansi('> Press [Q] to stop, [any] other key to continue.'),
+      ]);
+      final key = await tui.readKey();
+      final char = key.char?.toLowerCase();
+      if (char == 'q') {
+        await tui.writeInPlace(tuiKey, ['Ending game.', '']);
+        final maxChips = active.map((p) => p.chips).reduce(max);
+        final winnersNames = active
+            .where((p) => p.chips == maxChips)
+            .map((p) => p.name)
+            .toList();
+        await showGameWinners(winnersNames);
+        return true;
+      } else {
+        await tui.writeInPlace(tuiKey, ['Continuing.', '']);
         return false;
       }
     }
@@ -408,50 +412,54 @@ class Game {
   }
 
   Future<void> showShuffling() async {
-    await tui.write(' >>> Deck is being shuffled...\n\n');
+    await tui.write('Deck is being shuffled...\n\n');
   }
 
   Future<void> showDealingHole(String dealerName) async {
-    await tui.write(' >>> $dealerName is dealing cards to players...\n\n');
+    await tui.write('$dealerName is dealing cards to players...\n\n');
   }
 
   Future<void> showBlindIncrease() async {
-    await tui.write(
-      ' >>> The big blind has increased to ${table.bigBlind}!\n\n',
-    );
+    await tui.write('The big blind has increased to ${table.bigBlind}!\n\n');
   }
 
   Future<void> showPlayerMove(Player player, BettingMove move, int? bet) async {
     final chips = bet == 1 ? 'chip' : 'chips';
+    final bool importantMove;
     switch (move) {
       case BettingMove.folded:
-        await tui.write(' >>> ${player.name} folded! ×\n\n');
+        await tui.write('${player.name} folded! ×\n\n');
+        importantMove = true;
       case BettingMove.checked:
-        await tui.write(' >>> ${player.name} checked. √\n\n');
+        await tui.write('${player.name} checked. √\n\n');
+        importantMove = false;
       case BettingMove.allIn:
-        await tui.write(' >>> ${player.name} went all-in!\n\n');
+        await tui.write('${player.name} went all-in!\n\n');
+        importantMove = true;
       case BettingMove.called:
-        await tui.write(
-          ' >>> ${player.name} called ${player.bet} $chips. ←→\n\n',
-        );
+        await tui.write('${player.name} called ${player.bet} $chips. ←→\n\n');
+        importantMove = false;
       case BettingMove.bet:
-        await tui.write(' >>> ${player.name} bet ${player.bet} $chips. ↑\n\n');
+        await tui.write('${player.name} bet ${player.bet} $chips. ↑\n\n');
+        importantMove = true;
       case BettingMove.raised:
-        await tui.write(
-          ' >>> ${player.name} raised to ${player.bet} $chips. ↑\n\n',
-        );
+        await tui.write('${player.name} raised to ${player.bet} $chips. ↑\n\n');
+        importantMove = true;
+    }
+
+    if (importantMove && player is! HumanPlayer) {
+      await tui.waitForAnyKey();
     }
   }
 
   Future<void> showBetBlind(String playerName, String blindSize) async {
-    await tui.write(' >>> $playerName bet the $blindSize blind\n\n');
+    await tui.write('$playerName bet the $blindSize blind\n\n');
   }
 
   Future<void> showDefaultWinnerFold(String playerName) async {
-    await tui.write(' >>> All other players folded...\n');
-    await tui.write(' >>> $playerName won the pot!\n\n');
-    await tui.write('Press [Enter] to continue...\n\n');
-    await tui.readKey();
+    await tui.write('All other players folded...\n');
+    await tui.write('$playerName won the pot!\n\n');
+    await tui.waitForAnyKey();
   }
 
   Future<void> showDefaultWinnerEligibility(
@@ -459,20 +467,19 @@ class Game {
     int sidePotNum,
   ) async {
     await tui.write(
-      '\n >>> $playerName is the only player eligible for SIDE POT #$sidePotNum.\n',
+      '\n$playerName is the only player eligible for SIDE POT #$sidePotNum.\n',
     );
-    await tui.write(' >>> Gave those chips to $playerName.\n\n');
-    await tui.write('Press [Enter] to continue...\n\n');
-    await tui.readKey();
+    await tui.write('Gave those chips to $playerName.\n\n');
+    await tui.waitForAnyKey();
   }
 
   Future<void> showPhaseChangeAlert(Phase phase, String dealer) async {
     if (phase == Phase.preflop) {
-      await tui.write(' >>> Preflop Round: $dealer is the dealer!\n\n');
+      await tui.write('Preflop Round: $dealer is the dealer!\n\n');
     } else {
       final nameCapitalized =
           phase.name[0].toUpperCase() + phase.name.substring(1);
-      await tui.write(' >>> Round Change: the $nameCapitalized!\n\n');
+      await tui.write('Round Change: the $nameCapitalized!\n\n');
     }
   }
 
@@ -585,8 +592,7 @@ class Game {
   ) async {
     await showTable(isShowdown: true);
     await showPotWinners(handWinners, showdownPlayers, potNum);
-    await tui.write('Press [Enter] to continue...\n\n');
-    await tui.readKey();
+    await tui.waitForAnyKey();
   }
 
   Future<void> showPotWinners(
@@ -656,7 +662,7 @@ class Game {
       winnersStr =
           '${winnersNames.sublist(0, winnersNames.length - 1).join(', ')}, and ${winnersNames.last}';
     }
-    await tui.write('    >>> $winnersStr won the game!\n\n');
+    await tui.write('   $winnersStr won the game!\n\n');
     await tui.write('========================================\n');
     await tui.write('               GAME OVER                \n');
     await tui.write('========================================\n\n');
