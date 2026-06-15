@@ -33,25 +33,14 @@ class Game {
     final human = HumanPlayer('Player');
     players.add(human);
 
-    final names = [
-      'Homer',
-      'Bart',
-      'Lisa',
-      'Marge',
-      'Milhouse',
-      'Moe',
-      'Maggie',
-      'Nelson',
-      'Ralph',
-    ];
-    final computerNames = names.where((name) => name != 'Player').toList()
-      ..shuffle();
-
-    for (var i = 0; i < 4; i++) {
-      final style = ComputerPlayingStyle
-          .values[Random().nextInt(ComputerPlayingStyle.values.length)];
-      players.add(ComputerPlayer(computerNames[i], style));
-    }
+    players.add(ComputerPlayer('Grandma', .grandma, monteCarloIterations: 300));
+    players.add(ComputerPlayer('Leeroy', .leeroy, monteCarloIterations: 100));
+    players.add(
+      ComputerPlayer('Mr. Suitcase', .suitcase, monteCarloIterations: 500),
+    );
+    players.add(
+      ComputerPlayer('Michelle', .michelle, monteCarloIterations: 400),
+    );
 
     for (final player in players) {
       player.chips = 10000;
@@ -279,10 +268,19 @@ class Game {
         await showTable();
         move = await getHumanMove(bettingPlayer);
       } else if (bettingPlayer is ComputerPlayer) {
+        final potSize =
+            table.pots.fold<int>(0, (sum, pot) => sum + pot.amount) +
+            activePlayers.fold<int>(0, (sum, p) => sum + p.bet);
         move = await bettingPlayer.chooseNextMove(
           table.raiseAmount,
           table.numTimesRaised,
           table.lastBet,
+          community: table.community,
+          potSize: potSize,
+          otherBets: activePlayers
+              .where((p) => p != bettingPlayer && !p.isFolded)
+              .map((p) => p.bet)
+              .toList(),
         );
       } else {
         throw StateError('Unknown player type: ${bettingPlayer.runtimeType}');

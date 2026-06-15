@@ -79,9 +79,17 @@ class Table {
   void takeBet(Player player, BettingMove move) {
     final oldLastBet = lastBet;
     if (move == BettingMove.checked || move == BettingMove.called) {
+      if (lastBet - player.bet > player.chips) {
+        takeBet(player, BettingMove.allIn);
+        return;
+      }
       lastBet = player.matchBet(lastBet);
       // Calling doesn't count as a raise, obviously.
     } else if (move == BettingMove.raised || move == BettingMove.bet) {
+      if (raiseAmount - player.bet > player.chips) {
+        takeBet(player, BettingMove.allIn);
+        return;
+      }
       numTimesRaised += 1;
       lastBet = player.matchBet(raiseAmount);
       final raiseDone = lastBet - oldLastBet;

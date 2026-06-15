@@ -147,11 +147,12 @@ void main() {
       final table = Table()
         ..bigBlind = 200
         ..minRaiseIncrement = 200
-        ..raiseAmount = 300 // Raise from 100 to 300
+        ..raiseAmount =
+            300 // Raise from 100 to 300
         ..lastBet = 100;
-        
+
       table.takeBet(player, BettingMove.raised);
-      
+
       expect(table.lastBet, equals(300));
       expect(table.minRaiseIncrement, equals(200));
       expect(table.lastRaiseWasFull, isTrue);
@@ -163,11 +164,15 @@ void main() {
       final table = Table()
         ..lastBet = 100
         ..minRaiseIncrement = 200;
-        
+
       table.takeBet(player, BettingMove.allIn);
-      
+
       expect(table.lastBet, equals(500));
-      expect(table.minRaiseIncrement, equals(400), reason: 'All-in for 500 when lastBet was 100 is a raise of 400');
+      expect(
+        table.minRaiseIncrement,
+        equals(400),
+        reason: 'All-in for 500 when lastBet was 100 is a raise of 400',
+      );
       expect(table.lastRaiseWasFull, isTrue);
     });
 
@@ -176,12 +181,47 @@ void main() {
       final table = Table()
         ..lastBet = 200
         ..minRaiseIncrement = 200;
-        
+
       table.takeBet(player, BettingMove.allIn);
-      
+
       expect(table.lastBet, equals(250));
-      expect(table.minRaiseIncrement, equals(200), reason: 'Partial raise should not update minRaiseIncrement');
+      expect(
+        table.minRaiseIncrement,
+        equals(200),
+        reason: 'Partial raise should not update minRaiseIncrement',
+      );
       expect(table.lastRaiseWasFull, isFalse);
+    });
+
+    test('test_takeBet_call_more_than_chips_converts_to_allIn', () {
+      final player = MockConcretePlayerClass('Alice')..chips = 500;
+      final table = Table()..lastBet = 1000;
+      table.takeBet(player, BettingMove.called);
+      expect(player.isAllIn, isTrue);
+      expect(player.bet, 500);
+      expect(player.chips, 0);
+      expect(
+        table.lastBet,
+        1000,
+        reason:
+            'Table last bet should not decrease because someone went all-in for less',
+      );
+    });
+
+    test('test_takeBet_raise_more_than_chips_converts_to_allIn', () {
+      final player = MockConcretePlayerClass('Alice')..chips = 500;
+      final table = Table()
+        ..lastBet = 100
+        ..raiseAmount = 1000;
+      table.takeBet(player, BettingMove.raised);
+      expect(player.isAllIn, isTrue);
+      expect(player.bet, 500);
+      expect(player.chips, 0);
+      expect(
+        table.lastBet,
+        500,
+        reason: 'Table last bet should increase to the all-in amount',
+      );
     });
   });
 }

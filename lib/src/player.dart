@@ -68,5 +68,4 @@ abstract class Player {
   void fold() {
     isFolded = true;
   }
-
 }

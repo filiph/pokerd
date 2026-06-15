@@ -1,257 +1,248 @@
 import 'dart:math';
-import 'package:test/test.dart';
-import 'package:pokerd/src/computer_player.dart';
+
 import 'package:pokerd/src/betting_move.dart';
-
-class FakeRandom implements Random {
-  final double doubleValue;
-  FakeRandom(this.doubleValue);
-
-  @override
-  double nextDouble() => doubleValue;
-
-  @override
-  bool nextBool() => throw UnimplementedError();
-
-  @override
-  int nextInt(int max) => throw UnimplementedError();
-}
+import 'package:pokerd/src/card.dart';
+import 'package:pokerd/src/computer_player.dart';
+import 'package:test/test.dart';
 
 void main() {
-  group('ComputerPlayer - Risky Play Style', () {
-    test('goes all-in rare but possible when bet == tableLastBet', () async {
+  group('ComputerPlayer Archetypes', () {
+    late Random random;
+
+    setUp(() {
+      random = Random(42); // Fixed seed for reproducibility
+    });
+
+    test('Grandma folds weak hand pre-flop', () async {
       final player = ComputerPlayer(
-        'RiskyBot',
-        ComputerPlayingStyle.risky,
-        random: FakeRandom(0.03),
+        'Grandma',
+        ComputerPlayingStyle.grandma,
+        random: random,
+        monteCarloIterations: 1000,
       );
-      player.chips = 1000;
+      player.hand = [
+        const Card(CardRank.r2, CardSuite.spade),
+        const Card(CardRank.r7, CardSuite.heart),
+      ];
+      // Table has a bet of 200, Grandma has 0.
       player.bet = 0;
-      final move = await player.chooseNextMove(200, 0, 0);
-      expect(move, equals(BettingMove.allIn));
+      player.chips = 10000;
+      final move = await player.chooseNextMove(
+        400,
+        0,
+        200,
+        community: [],
+        potSize: 300,
+        otherBets: [200],
+      );
+      expect(move, equals(BettingMove.folded));
     });
 
-    test('performs check/bet/fold when x is larger', () async {
-      // Checked
-      final playerCheck = ComputerPlayer(
-        'RiskyBot',
-        ComputerPlayingStyle.risky,
-        random: FakeRandom(0.20),
-      );
-      playerCheck.chips = 1000;
-      playerCheck.bet = 0;
-      expect(
-        await playerCheck.chooseNextMove(200, 0, 0),
-        equals(BettingMove.checked),
-      );
-
-      // Bet
-      final playerBet = ComputerPlayer(
-        'RiskyBot',
-        ComputerPlayingStyle.risky,
-        random: FakeRandom(0.60),
-      );
-      playerBet.chips = 1000;
-      playerBet.bet = 0;
-      expect(
-        await playerBet.chooseNextMove(200, 0, 0),
-        equals(BettingMove.bet),
-      );
-
-      // Folded
-      final playerFold = ComputerPlayer(
-        'RiskyBot',
-        ComputerPlayingStyle.risky,
-        random: FakeRandom(0.95),
-      );
-      playerFold.chips = 1000;
-      playerFold.bet = 0;
-      expect(
-        await playerFold.chooseNextMove(200, 0, 0),
-        equals(BettingMove.folded),
-      );
-    });
-
-    test('goes all-in rare but possible when bet != tableLastBet', () async {
+    test('Grandma calls with very strong hand', () async {
       final player = ComputerPlayer(
-        'RiskyBot',
-        ComputerPlayingStyle.risky,
-        random: FakeRandom(0.03),
+        'Grandma',
+        ComputerPlayingStyle.grandma,
+        random: random,
+        monteCarloIterations: 1000,
       );
-      player.chips = 1000;
-      player.bet = 100;
-      final move = await player.chooseNextMove(300, 1, 200);
-      expect(move, equals(BettingMove.allIn));
-    });
-
-    test('goes all-in rare but possible when raise limit reached', () async {
-      final player = ComputerPlayer(
-        'RiskyBot',
-        ComputerPlayingStyle.risky,
-        random: FakeRandom(0.03),
-      );
-      player.chips = 1000;
-      player.bet = 100;
-      final move = await player.chooseNextMove(300, 4, 200);
-      expect(move, equals(BettingMove.allIn));
-    });
-  });
-
-  group('ComputerPlayer - Safe Play Style', () {
-    test('goes all-in rare but possible when bet == tableLastBet', () async {
-      final player = ComputerPlayer(
-        'SafeBot',
-        ComputerPlayingStyle.safe,
-        random: FakeRandom(0.01),
-      );
-      player.chips = 1000;
+      player.hand = [
+        const Card(CardRank.a, CardSuite.spade),
+        const Card(CardRank.a, CardSuite.heart),
+      ];
       player.bet = 0;
-      final move = await player.chooseNextMove(200, 0, 0);
-      expect(move, equals(BettingMove.allIn));
+      player.chips = 10000;
+      final move = await player.chooseNextMove(
+        400,
+        0,
+        200,
+        community: [],
+        potSize: 300,
+        otherBets: [200],
+      );
+      // AA preflop is > 80% win prob vs 1 opponent
+      expect(move, equals(BettingMove.called));
     });
 
-    test('performs check/bet/fold when x is larger', () async {
-      // Checked
-      final playerCheck = ComputerPlayer(
-        'SafeBot',
-        ComputerPlayingStyle.safe,
-        random: FakeRandom(0.50),
-      );
-      playerCheck.chips = 1000;
-      playerCheck.bet = 0;
-      expect(
-        await playerCheck.chooseNextMove(200, 0, 0),
-        equals(BettingMove.checked),
-      );
-
-      // Bet
-      final playerBet = ComputerPlayer(
-        'SafeBot',
-        ComputerPlayingStyle.safe,
-        random: FakeRandom(0.80),
-      );
-      playerBet.chips = 1000;
-      playerBet.bet = 0;
-      expect(
-        await playerBet.chooseNextMove(200, 0, 0),
-        equals(BettingMove.bet),
-      );
-
-      // Folded
-      final playerFold = ComputerPlayer(
-        'SafeBot',
-        ComputerPlayingStyle.safe,
-        random: FakeRandom(0.95),
-      );
-      playerFold.chips = 1000;
-      playerFold.bet = 0;
-      expect(
-        await playerFold.chooseNextMove(200, 0, 0),
-        equals(BettingMove.folded),
-      );
-    });
-
-    test('goes all-in rare but possible when bet != tableLastBet', () async {
+    test('Leeroy bets pre-flop with mediocre hand', () async {
       final player = ComputerPlayer(
-        'SafeBot',
-        ComputerPlayingStyle.safe,
-        random: FakeRandom(0.01),
+        'Leeroy',
+        ComputerPlayingStyle.leeroy,
+        random: random,
+        monteCarloIterations: 1000,
       );
-      player.chips = 1000;
-      player.bet = 100;
-      final move = await player.chooseNextMove(300, 1, 200);
-      expect(move, equals(BettingMove.allIn));
-    });
-
-    test('goes all-in rare but possible when raise limit reached', () async {
-      final player = ComputerPlayer(
-        'SafeBot',
-        ComputerPlayingStyle.safe,
-        random: FakeRandom(0.01),
-      );
-      player.chips = 1000;
-      player.bet = 100;
-      final move = await player.chooseNextMove(300, 4, 200);
-      expect(move, equals(BettingMove.allIn));
-    });
-  });
-
-  group('ComputerPlayer - Random Play Style', () {
-    test('goes all-in rare but possible when bet == tableLastBet', () async {
-      final player = ComputerPlayer(
-        'RandomBot',
-        ComputerPlayingStyle.random,
-        random: FakeRandom(0.03),
-      );
-      player.chips = 1000;
+      player.hand = [
+        const Card(CardRank.j, CardSuite.spade),
+        const Card(CardRank.r10, CardSuite.heart),
+      ];
       player.bet = 0;
-      final move = await player.chooseNextMove(200, 0, 0);
-      expect(move, equals(BettingMove.allIn));
+      player.chips = 10000;
+      final move = await player.chooseNextMove(
+        200,
+        0,
+        0,
+        community: [],
+        potSize: 0,
+        otherBets: [0],
+      );
+      expect(move, equals(BettingMove.bet));
     });
 
-    test('performs check/bet/fold when x is larger', () async {
-      // Checked
-      final playerCheck = ComputerPlayer(
-        'RandomBot',
-        ComputerPlayingStyle.random,
-        random: FakeRandom(0.20),
-      );
-      playerCheck.chips = 1000;
-      playerCheck.bet = 0;
-      expect(
-        await playerCheck.chooseNextMove(200, 0, 0),
-        equals(BettingMove.checked),
-      );
-
-      // Bet
-      final playerBet = ComputerPlayer(
-        'RandomBot',
-        ComputerPlayingStyle.random,
-        random: FakeRandom(0.50),
-      );
-      playerBet.chips = 1000;
-      playerBet.bet = 0;
-      expect(
-        await playerBet.chooseNextMove(200, 0, 0),
-        equals(BettingMove.bet),
-      );
-
-      // Folded
-      final playerFold = ComputerPlayer(
-        'RandomBot',
-        ComputerPlayingStyle.random,
-        random: FakeRandom(0.80),
-      );
-      playerFold.chips = 1000;
-      playerFold.bet = 0;
-      expect(
-        await playerFold.chooseNextMove(200, 0, 0),
-        equals(BettingMove.folded),
-      );
-    });
-
-    test('goes all-in rare but possible when bet != tableLastBet', () async {
+    test('Mr. Suitcase calls when pot odds are favorable', () async {
       final player = ComputerPlayer(
-        'RandomBot',
-        ComputerPlayingStyle.random,
-        random: FakeRandom(0.03),
+        'Mr. Suitcase',
+        ComputerPlayingStyle.suitcase,
+        random: random,
+        monteCarloIterations: 1000,
       );
-      player.chips = 1000;
-      player.bet = 100;
-      final move = await player.chooseNextMove(300, 1, 200);
-      expect(move, equals(BettingMove.allIn));
+      // Flush draw
+      player.hand = [
+        const Card(CardRank.r2, CardSuite.heart),
+        const Card(CardRank.r3, CardSuite.heart),
+      ];
+      final community = [
+        const Card(CardRank.a, CardSuite.heart),
+        const Card(CardRank.k, CardSuite.heart),
+        const Card(CardRank.q, CardSuite.spade),
+      ];
+      player.bet = 0;
+      player.chips = 10000;
+      // Pot is 1000, call is 100. Pot odds = 100/1100 ~= 0.09.
+      // Win prob for flush draw (9 outs) is ~35% over 2 cards.
+      final move = await player.chooseNextMove(
+        200,
+        0,
+        100,
+        community: community,
+        potSize: 1000,
+        otherBets: [100],
+      );
+      expect(move, anyOf(BettingMove.called, BettingMove.raised));
     });
 
-    test('goes all-in rare but possible when raise limit reached', () async {
+    test('Mr. Suitcase folds when pot odds are unfavorable', () async {
       final player = ComputerPlayer(
-        'RandomBot',
-        ComputerPlayingStyle.random,
-        random: FakeRandom(0.03),
+        'Mr. Suitcase',
+        ComputerPlayingStyle.suitcase,
+        random: random,
+        monteCarloIterations: 1000,
       );
-      player.chips = 1000;
-      player.bet = 100;
-      final move = await player.chooseNextMove(300, 4, 200);
-      expect(move, equals(BettingMove.allIn));
+      player.hand = [
+        const Card(CardRank.r2, CardSuite.spade),
+        const Card(CardRank.r7, CardSuite.heart),
+      ];
+      player.bet = 0;
+      player.chips = 10000;
+      // Huge bet, low win prob
+      final move = await player.chooseNextMove(
+        2000,
+        0,
+        2000,
+        community: [],
+        potSize: 100,
+        otherBets: [2000],
+      );
+      expect(move, equals(BettingMove.folded));
     });
+
+    test('Error field introduces irrationality', () async {
+      // With high error, Grandma might NOT fold a weak hand (though unlikely to happen every time, we can test jitter)
+      final player = ComputerPlayer(
+        'Grandma',
+        ComputerPlayingStyle.grandma,
+        error: 1.0,
+        random: random,
+        monteCarloIterations: 1000,
+      );
+      player.hand = [
+        const Card(CardRank.r2, CardSuite.spade),
+        const Card(CardRank.r7, CardSuite.heart),
+      ];
+      player.bet = 0;
+      player.chips = 10000;
+
+      // We run it a few times to see if she ever DOESN'T fold
+      var didNotFold = false;
+      for (var i = 0; i < 20; i++) {
+        final move = await player.chooseNextMove(
+          400,
+          0,
+          200,
+          community: [],
+          potSize: 300,
+          otherBets: [200],
+        );
+        if (move != BettingMove.folded) {
+          didNotFold = true;
+          break;
+        }
+      }
+      expect(
+        didNotFold,
+        isTrue,
+        reason:
+            'With error 1.0, Grandma should eventually do something irrational',
+      );
+    });
+
+    test('Michelle folds when someone bets huge relative to pot', () async {
+      final player = ComputerPlayer(
+        'Michelle',
+        ComputerPlayingStyle.michelle,
+        random: random,
+        monteCarloIterations: 1000,
+      );
+      // Mediocre hand: pair of Jacks
+      player.hand = [
+        const Card(CardRank.j, CardSuite.spade),
+        const Card(CardRank.j, CardSuite.heart),
+      ];
+      final community = [
+        const Card(CardRank.a, CardSuite.diamond),
+        const Card(CardRank.k, CardSuite.diamond),
+        const Card(CardRank.r2, CardSuite.club),
+      ];
+      player.bet = 0;
+      player.chips = 10000;
+      // Pot is 1000, but someone bets 5000 (huge overbet).
+      // Michelle should be cautious.
+      final move = await player.chooseNextMove(
+        5000,
+        0,
+        5000,
+        community: community,
+        potSize: 1000,
+        otherBets: [5000],
+      );
+      expect(move, equals(BettingMove.folded));
+    });
+
+    test(
+      'ComputerPlayer returns all-in when it wants to call but is short',
+      () async {
+        final player = ComputerPlayer(
+          'Michelle',
+          ComputerPlayingStyle.michelle,
+          random: random,
+          monteCarloIterations: 1000,
+        );
+        player.hand = [
+          const Card(CardRank.a, CardSuite.spade),
+          const Card(CardRank.a, CardSuite.heart),
+        ];
+        player.bet = 0;
+        player.chips = 1000;
+
+        // Need to call 2000, but only has 1000.
+        final move = await player.chooseNextMove(
+          2000,
+          0,
+          2000,
+          community: [],
+          potSize: 10000,
+          otherBets: [2000],
+        );
+        expect(move, equals(BettingMove.allIn));
+      },
+    );
   });
 }

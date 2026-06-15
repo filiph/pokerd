@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:meta/meta.dart';
 
 import 'card.dart';
@@ -495,5 +497,59 @@ sealed class HandRank implements Comparable<HandRank> {
       return int.parse(buffer.toString());
     }
     return 0;
+  }
+
+  static double estimateWinProbability(
+    List<Card> myHand,
+    List<Card> community,
+    int numOpponents, {
+    int iterations = 100,
+  }) {
+    if (numOpponents <= 0) return 1.0;
+
+    final allKnownCards = {...myHand, ...community};
+    final deck = [
+      for (final suite in CardSuite.values)
+        for (final rank in CardRank.values) Card(rank, suite),
+    ]..removeWhere((card) => allKnownCards.contains(card));
+
+    final random = Random();
+    var wins = 0;
+
+    for (var i = 0; i < iterations; i++) {
+      final currentDeck = List<Card>.from(deck)..shuffle(random);
+
+      // Assign cards to opponents
+      final opponentHands = <List<Card>>[];
+      for (var j = 0; j < numOpponents; j++) {
+        opponentHands.add([currentDeck.removeLast(), currentDeck.removeLast()]);
+      }
+
+      // Complete community cards
+      final fullCommunity = List<Card>.from(community);
+      while (fullCommunity.length < 5) {
+        fullCommunity.add(currentDeck.removeLast());
+      }
+
+      // Determine winners
+      final players = [
+        _HandRankPlayer('Me', myHand),
+        for (var j = 0; j < numOpponents; j++)
+          _HandRankPlayer('Opponent $j', opponentHands[j]),
+      ];
+
+      final winners = determineShowdownWinner(players, fullCommunity);
+      if (winners.any((p) => p.name == 'Me')) {
+        wins++;
+      }
+    }
+
+    return wins / iterations;
+  }
+}
+
+class _HandRankPlayer extends Player {
+  _HandRankPlayer(super.name, List<Card> initialHand) {
+    hand = initialHand;
   }
 }

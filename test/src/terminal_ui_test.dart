@@ -183,49 +183,53 @@ void main() {
         expect(outputLines[1].replaceAll(ansiRegex, ''), equals('7890'));
       });
 
-      test('wraps correctly when ANSI code is exactly at the wrap point',
-          () async {
-        const width = 5;
-        final output = StringBuffer();
-        final testTui = TerminalUI(outputSink: output);
-        testTui.terminalWidthOverride = width;
-        testTui.speed = 0;
+      test(
+        'wraps correctly when ANSI code is exactly at the wrap point',
+        () async {
+          const width = 5;
+          final output = StringBuffer();
+          final testTui = TerminalUI(outputSink: output);
+          testTui.terminalWidthOverride = width;
+          testTui.speed = 0;
 
-        // 1234[ANSI]5678
-        final line = '1234\x1B[31m5678';
-        await testTui.write(line);
+          // 1234[ANSI]5678
+          final line = '1234\x1B[31m5678';
+          await testTui.write(line);
 
-        final outputLines = output.toString().trimRight().split('\n');
-        final ansiRegex = RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]');
+          final outputLines = output.toString().trimRight().split('\n');
+          final ansiRegex = RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]');
 
-        // Expected:
-        // Line 1: "1234[ANSI]5" (visible length 5)
-        // Line 2: "678" (visible length 3)
-        expect(outputLines[0].replaceAll(ansiRegex, ''), equals('12345'));
-        expect(outputLines[1].replaceAll(ansiRegex, ''), equals('678'));
-      });
+          // Expected:
+          // Line 1: "1234[ANSI]5" (visible length 5)
+          // Line 2: "678" (visible length 3)
+          expect(outputLines[0].replaceAll(ansiRegex, ''), equals('12345'));
+          expect(outputLines[1].replaceAll(ansiRegex, ''), equals('678'));
+        },
+      );
 
-      test('wraps correctly when ANSI code is just before the wrap point',
-          () async {
-        const width = 5;
-        final output = StringBuffer();
-        final testTui = TerminalUI(outputSink: output);
-        testTui.terminalWidthOverride = width;
-        testTui.speed = 0;
+      test(
+        'wraps correctly when ANSI code is just before the wrap point',
+        () async {
+          const width = 5;
+          final output = StringBuffer();
+          final testTui = TerminalUI(outputSink: output);
+          testTui.terminalWidthOverride = width;
+          testTui.speed = 0;
 
-        // 1234[ANSI] 5678
-        final line = '1234\x1B[31m 5678';
-        await testTui.write(line);
+          // 1234[ANSI] 5678
+          final line = '1234\x1B[31m 5678';
+          await testTui.write(line);
 
-        final outputLines = output.toString().trimRight().split('\n');
-        final ansiRegex = RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]');
+          final outputLines = output.toString().trimRight().split('\n');
+          final ansiRegex = RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]');
 
-        // Expected:
-        // Line 1: "1234[ANSI] " (visible length 5)
-        // Line 2: "5678" (visible length 4)
-        expect(outputLines[0].replaceAll(ansiRegex, ''), equals('1234 '));
-        expect(outputLines[1].replaceAll(ansiRegex, ''), equals('5678'));
-      });
+          // Expected:
+          // Line 1: "1234[ANSI] " (visible length 5)
+          // Line 2: "5678" (visible length 4)
+          expect(outputLines[0].replaceAll(ansiRegex, ''), equals('1234 '));
+          expect(outputLines[1].replaceAll(ansiRegex, ''), equals('5678'));
+        },
+      );
     });
   });
 }
