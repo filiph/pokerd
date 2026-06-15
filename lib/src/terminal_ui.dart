@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:ansi_escapes/ansi_escapes.dart';
 
@@ -59,6 +60,7 @@ class TerminalUI {
   int _activePhysicalLines = 0;
   int speed = 300; // Characters per second
   int? terminalWidthOverride;
+  int charsPerWrite = 10;
 
   StreamSubscription<List<int>>? _stdinSub;
   final _inputController = StreamController<InputChar>.broadcast();
@@ -97,7 +99,7 @@ class TerminalUI {
     return chunks;
   }
 
-  Future<void> write(String text) async {
+  Future<void> write(String text, {int? speedOverride}) async {
     _activeKey = null;
     _activePhysicalLines = 0;
 
@@ -113,15 +115,19 @@ class TerminalUI {
       wrapped.addAll(_wrapLine(line, width));
     }
 
-    final wrappedText = wrapped.join('\n') + (hasTrailingNewline ? '\n' : '');
-    _outputSink.write(wrappedText);
+    final output = wrapped.join('\n') + (hasTrailingNewline ? '\n' : '');
 
-    int ms = 0;
+    final speed = speedOverride ?? this.speed;
+    int delay = 0;
     if (speed > 0) {
-      ms = (text.length * 1000) ~/ speed;
+      delay = (1000 / speed * charsPerWrite).round();
     }
-    if (ms > 0) {
-      await Future<void>.delayed(Duration(milliseconds: ms));
+
+    for (var i = 0; i < output.length; i += charsPerWrite) {
+      _outputSink.write(
+        output.substring(i, min(i + charsPerWrite, output.length)),
+      );
+      await Future<void>.delayed(Duration(milliseconds: delay));
     }
   }
 
@@ -145,15 +151,22 @@ class TerminalUI {
     _activeKey = key;
 
     final output = wrapped.map((l) => '$l\n').join();
-    _outputSink.write(output);
 
-    final totalLength = lines.fold<int>(0, (sum, line) => sum + line.length);
-    int ms = 0;
-    if (!isRewrite && speed > 0) {
-      ms = (totalLength * 1000) ~/ speed;
-    }
-    if (ms > 0) {
-      await Future<void>.delayed(Duration(milliseconds: ms));
+    if (isRewrite) {
+      _outputSink.write(output);
+    } else {
+      const charsPerWrite = 4;
+      int delay = 0;
+      if (speed > 0) {
+        delay = (1000 / speed * charsPerWrite).round();
+      }
+
+      for (var i = 0; i < output.length; i += charsPerWrite) {
+        _outputSink.write(
+          output.substring(i, min(i + charsPerWrite, output.length)),
+        );
+        await Future<void>.delayed(Duration(milliseconds: delay));
+      }
     }
   }
 

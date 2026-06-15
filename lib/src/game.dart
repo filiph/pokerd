@@ -21,6 +21,7 @@ class Game {
   final Table table = Table();
   final TerminalUI tui;
   int speed = 300;
+  bool useColor = false;
 
   Game(this.tui) {
     setup();
@@ -261,7 +262,7 @@ class Game {
       }
       table.updateRaiseAmount(phase);
       if (bettingPlayer is ComputerPlayer) {
-        await showThinking(bettingPlayer.name);
+        // Nothing to show. (Previously, we showed "$player is thinking...".)
       } else if (bettingPlayer is HumanPlayer) {
         await showTable();
       }
@@ -396,22 +397,14 @@ class Game {
 
   String cardStr(Card card) {
     final suiteStr = card.suite.symbol;
-    String coloredSuite;
-    switch (card.suite) {
-      case CardSuite.club:
-        coloredSuite = suiteStr.green();
-        break;
-      case CardSuite.diamond:
-        coloredSuite = suiteStr.cyan();
-        break;
-      case CardSuite.heart:
-        coloredSuite = suiteStr.red();
-        break;
-      case CardSuite.spade:
-        coloredSuite = suiteStr.yellow();
-        break;
-    }
-    return '[${card.rank.symbol.padRight(2, ' ')}$coloredSuite]';
+    late final String coloredSuite = switch (card.suite) {
+      .club => suiteStr.green(),
+      .diamond => suiteStr.cyan(),
+      .heart => suiteStr.red(),
+      .spade => suiteStr.yellow(),
+    };
+    return '[${card.rank.symbol.padRight(2, ' ')}'
+        '${useColor ? coloredSuite : suiteStr}]';
   }
 
   Future<void> showShuffling() async {
@@ -426,10 +419,6 @@ class Game {
     await tui.write(
       ' >>> The big blind has increased to ${table.bigBlind}!\n\n',
     );
-  }
-
-  Future<void> showThinking(String playerName) async {
-    await tui.write(' >>> $playerName is thinking...\n\n');
   }
 
   Future<void> showPlayerMove(Player player, BettingMove move, int? bet) async {
@@ -491,9 +480,8 @@ class Game {
     final sortedPlayers = List<Player>.from(players)
       ..sort((a, b) => (b.isInGame ? 1 : 0).compareTo(a.isInGame ? 1 : 0));
 
-    await tui.write(
-      '========================================================================\n',
-    );
+    ;
+    await tui.write('=' * 79 + '\n', speedOverride: 1000);
     for (final player in sortedPlayers) {
       if (player.isInGame) {
         final handStr = <String>[];
@@ -545,23 +533,30 @@ class Game {
         }
         await tui.write(
           '${player.name.padLeft(11)}\'s hand:    $handCombined$chipsAndBet\n',
+          speedOverride: 1000,
         );
       } else {
         await tui.write(
           '${player.name.padLeft(18)}:    [OUT OF CHIPS, OUT OF GAME]\n',
+          speedOverride: 1000,
         );
       }
     }
     await tui.write('\n');
 
     final communityCards = table.community.map(cardStr).join('  ');
-    await tui.write('${' '.padRight(9)}COMMUNITY:  $communityCards\n\n');
+    await tui.write(
+      '${' '.padRight(9)}COMMUNITY:  $communityCards\n\n',
+      speedOverride: 1000,
+    );
 
     await tui.write(
       '${' '.padRight(7)}Small Blind:${(table.bigBlind ~/ 2).toString().padLeft(6)}\n',
+      speedOverride: 1000,
     );
     await tui.write(
       '${' '.padRight(9)}Big Blind:${table.bigBlind.toString().padLeft(6)}\n',
+      speedOverride: 1000,
     );
 
     final mainPot = table.pots[0];
@@ -579,10 +574,8 @@ class Game {
             '${' '.padRight(12)}SIDE POT #$i:${sidePot.amount.toString().padLeft(6)}';
       }
     }
-    await tui.write('$potStr\n');
-    await tui.write(
-      '========================================================================\n\n',
-    );
+    await tui.write('$potStr\n', speedOverride: 1000);
+    await tui.write('=' * 79 + '\n', speedOverride: 1000);
   }
 
   Future<void> showShowdownResults(
