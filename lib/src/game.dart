@@ -627,7 +627,7 @@ class Game {
       strBuf.write('    ');
 
       if (!player.isInGame) {
-        strBuf.write('[OUT OF GAME]');
+        strBuf.write('[BUSTED]'.dim());
       } else {
         strBuf.write(
           TerminalUI.formatHand(
@@ -682,20 +682,24 @@ class Game {
       useColor: useColor,
     );
     await tui.write(
-      '${'Community'.padLeft(12)}:   $communityCards\n\n',
+      '${'Community'.padLeft(12)}    $communityCards\n\n',
       speedOverride: 1000,
     );
 
     await tui.write(
       '${'Small Blind'.padLeft(12)}: '
-      '${(table.bigBlind ~/ 2).toString().padLeft(6)}¤\n',
+              '${(table.bigBlind ~/ 2).toString().padLeft(6)}¤'
+          .dim(),
       speedOverride: 1000,
     );
+    await tui.write('\n', speedOverride: 1000);
     await tui.write(
       '${'Big Blind'.padLeft(12)}: '
-      '${table.bigBlind.toString().padLeft(6)}¤\n',
+              '${table.bigBlind.toString().padLeft(6)}¤'
+          .dim(),
       speedOverride: 1000,
     );
+    await tui.write('\n', speedOverride: 1000);
 
     final mainPot = table.pots[0];
     await tui.write(
