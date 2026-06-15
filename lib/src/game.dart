@@ -2,6 +2,9 @@ import 'dart:math';
 
 import 'package:pokerd/src/ansi.dart';
 
+import 'package:meta/meta.dart';
+
+import 'card.dart';
 import 'betting_move.dart';
 import 'computer_player.dart';
 import 'deck.dart';
@@ -27,7 +30,7 @@ class Game {
   }
 
   void setup() {
-    final human = HumanPlayer('Player', tui);
+    final human = HumanPlayer('Player');
     players.add(human);
 
     final names = [
@@ -264,16 +267,20 @@ class Game {
         continue;
       }
       table.updateRaiseAmount(phase);
-      if (bettingPlayer is ComputerPlayer) {
-        // Nothing to show. (Previously, we showed "$player is thinking...".)
-      } else if (bettingPlayer is HumanPlayer) {
+      final BettingMove move;
+      if (bettingPlayer is HumanPlayer) {
         await showTable();
+        move = await getHumanMove(bettingPlayer);
+      } else if (bettingPlayer is ComputerPlayer) {
+        move = await bettingPlayer.chooseNextMove(
+          table.raiseAmount,
+          table.numTimesRaised,
+          table.lastBet,
+        );
+      } else {
+        throw StateError('Unknown player type: ${bettingPlayer.runtimeType}');
       }
-      final move = await bettingPlayer.chooseNextMove(
-        table.raiseAmount,
-        table.numTimesRaised,
-        table.lastBet,
-      );
+
       if (bettingPlayer is HumanPlayer &&
           (move == BettingMove.bet || move == BettingMove.raised)) {
         table.raiseAmount = bettingPlayer.customBet;
@@ -294,6 +301,84 @@ class Game {
       }
       bettingPlayer.isLocked = true;
       bettingIndex += 1;
+    }
+  }
+
+  @visibleForTesting
+  Future<BettingMove> getHumanMove(HumanPlayer player) async {
+    player.customBet = table.raiseAmount;
+
+    while (true) {
+      List<String> validMoves;
+      String prompt;
+      bool canAdjust = false;
+
+      // If player doesn't have enough chips to raise or if player has just enough chips to raise
+      if (player.chips <= (player.bet - table.raiseAmount).abs()) {
+        // If not enough chips to call
+        if (player.chips <= (player.bet - table.lastBet).abs()) {
+          validMoves = ['f', 'a'];
+          prompt = '> [A]ll-in   [F]old';
+        } else {
+          validMoves = ['c', 'a', 'f'];
+          prompt = '> [C]all ${table.lastBet}¤  [A]ll-in   [F]old';
+        }
+      } else if (table.numTimesRaised < 4) {
+        canAdjust = true;
+        if (player.bet == table.lastBet) {
+          validMoves = ['c', 'b', 'a', 'f'];
+          prompt =
+              '> [C]heck   [B]et [←]${player.customBet}¤[→]   [A]ll-in   [F]old';
+        } else {
+          validMoves = ['c', 'r', 'a', 'f'];
+          prompt =
+              '> [C]all ${table.lastBet}¤   [R]aise to [←]${player.customBet}¤[→]   [A]ll-in   [F]old';
+        }
+      } else {
+        validMoves = ['c', 'a', 'f'];
+        prompt = '> [C]all ${table.lastBet}¤   [A]ll-in   [F]old';
+      }
+
+      final underlinedPrompt = ansi('\n$prompt');
+      final linesToPrint = underlinedPrompt.split('\n');
+      await tui.writeInPlace('human_prompt', linesToPrint);
+
+      final key = await tui.readKey();
+      if (key.isLeft && canAdjust) {
+        if (player.customBet > table.raiseAmount) {
+          if (player.customBet - 100 >= table.raiseAmount) {
+            player.customBet -= 100;
+          } else {
+            player.customBet = table.raiseAmount;
+          }
+        }
+      } else if (key.isRight && canAdjust) {
+        final maxBet = player.chips + player.bet;
+        if (player.customBet < maxBet) {
+          if (player.customBet + 100 <= maxBet) {
+            player.customBet += 100;
+          } else {
+            player.customBet = maxBet;
+          }
+        }
+      } else {
+        final char = key.char?.toLowerCase();
+        if (char != null && validMoves.contains(char)) {
+          if (char == 'b') {
+            return BettingMove.bet;
+          } else if (char == 'r') {
+            return BettingMove.raised;
+          } else if (char == 'f') {
+            return BettingMove.folded;
+          } else if (char == 'a') {
+            return BettingMove.allIn;
+          } else if (player.bet == table.lastBet) {
+            return BettingMove.checked;
+          } else {
+            return BettingMove.called;
+          }
+        }
+      }
     }
   }
 
@@ -664,5 +749,138 @@ class Game {
     await tui.write('========================================\n');
     await tui.write('               GAME OVER                \n');
     await tui.write('========================================\n\n');
+  }
+
+  Future<void> showRankingsHelp() async {
+    await tui.write('Hand Rankings:\n\n');
+
+    final rankings = const [
+      (
+        'Royal Flush',
+        [
+          Card(CardRank.a, CardSuite.spade),
+          Card(CardRank.k, CardSuite.spade),
+          Card(CardRank.q, CardSuite.spade),
+          Card(CardRank.j, CardSuite.spade),
+          Card(CardRank.r10, CardSuite.spade),
+        ],
+        '0.00015%'
+      ),
+      (
+        'Straight Flush',
+        [
+          Card(CardRank.r9, CardSuite.heart),
+          Card(CardRank.r8, CardSuite.heart),
+          Card(CardRank.r7, CardSuite.heart),
+          Card(CardRank.r6, CardSuite.heart),
+          Card(CardRank.r5, CardSuite.heart),
+        ],
+        '0.0014%'
+      ),
+      (
+        'Four of a Kind',
+        [
+          Card(CardRank.a, CardSuite.spade),
+          Card(CardRank.a, CardSuite.heart),
+          Card(CardRank.a, CardSuite.diamond),
+          Card(CardRank.a, CardSuite.club),
+          Card(CardRank.k, CardSuite.spade),
+        ],
+        '0.024%'
+      ),
+      (
+        'Full House',
+        [
+          Card(CardRank.k, CardSuite.spade),
+          Card(CardRank.k, CardSuite.heart),
+          Card(CardRank.k, CardSuite.diamond),
+          Card(CardRank.q, CardSuite.spade),
+          Card(CardRank.q, CardSuite.heart),
+        ],
+        '0.14%'
+      ),
+      (
+        'Flush',
+        [
+          Card(CardRank.a, CardSuite.diamond),
+          Card(CardRank.j, CardSuite.diamond),
+          Card(CardRank.r8, CardSuite.diamond),
+          Card(CardRank.r4, CardSuite.diamond),
+          Card(CardRank.r2, CardSuite.diamond),
+        ],
+        '0.20%'
+      ),
+      (
+        'Straight',
+        [
+          Card(CardRank.r10, CardSuite.spade),
+          Card(CardRank.r9, CardSuite.heart),
+          Card(CardRank.r8, CardSuite.diamond),
+          Card(CardRank.r7, CardSuite.club),
+          Card(CardRank.r6, CardSuite.spade),
+        ],
+        '0.39%'
+      ),
+      (
+        'Three of a Kind',
+        [
+          Card(CardRank.q, CardSuite.spade),
+          Card(CardRank.q, CardSuite.heart),
+          Card(CardRank.q, CardSuite.diamond),
+          Card(CardRank.r10, CardSuite.spade),
+          Card(CardRank.r7, CardSuite.heart),
+        ],
+        '2.11%'
+      ),
+      (
+        'Two Pair',
+        [
+          Card(CardRank.j, CardSuite.spade),
+          Card(CardRank.j, CardSuite.heart),
+          Card(CardRank.r9, CardSuite.diamond),
+          Card(CardRank.r9, CardSuite.club),
+          Card(CardRank.r5, CardSuite.spade),
+        ],
+        '4.75%'
+      ),
+      (
+        'One Pair',
+        [
+          Card(CardRank.r10, CardSuite.spade),
+          Card(CardRank.r10, CardSuite.heart),
+          Card(CardRank.r8, CardSuite.diamond),
+          Card(CardRank.r4, CardSuite.club),
+          Card(CardRank.r3, CardSuite.spade),
+        ],
+        '42.26%'
+      ),
+      (
+        'High Card',
+        [
+          Card(CardRank.a, CardSuite.spade),
+          Card(CardRank.q, CardSuite.heart),
+          Card(CardRank.r10, CardSuite.diamond),
+          Card(CardRank.r7, CardSuite.club),
+          Card(CardRank.r5, CardSuite.spade),
+        ],
+        '50.12%'
+      ),
+    ];
+
+    for (var i = 0; i < rankings.length; i++) {
+      final rank = rankings[i];
+      final handStr = TerminalUI.formatHand(
+        rank.$2,
+        showFace: true,
+        useColor: useColor,
+      );
+      await tui.write(
+        '#${(i + 1).toString().padRight(2)}   '
+        '${rank.$1.padRight(15)}   '
+        '$handStr   '
+        '${rank.$3}\n',
+      );
+    }
+    await tui.write('\n');
   }
 }

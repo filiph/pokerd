@@ -1,20 +1,10 @@
 import 'package:test/test.dart';
 import 'package:pokerd/src/card.dart';
 import 'package:pokerd/src/player.dart';
-import 'package:pokerd/src/betting_move.dart';
 import 'package:pokerd/src/hand_rank.dart';
 
 class TestPlayer extends Player {
   TestPlayer(super.name);
-
-  @override
-  Future<BettingMove> chooseNextMove(
-    int tableRaiseAmount,
-    int numTimesTableRaised,
-    int tableLastBet,
-  ) async {
-    return BettingMove.checked;
-  }
 }
 
 void main() {

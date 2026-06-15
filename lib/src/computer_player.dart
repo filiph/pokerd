@@ -1,6 +1,7 @@
 import 'dart:math';
-import 'player.dart';
+
 import 'betting_move.dart';
+import 'player.dart';
 
 enum ComputerPlayingStyle { safe, risky, random }
 
@@ -11,7 +12,6 @@ class ComputerPlayer extends Player {
   ComputerPlayer(super.name, this.playingStyle, {Random? random})
     : _random = random ?? Random();
 
-  @override
   Future<BettingMove> chooseNextMove(
     int tableRaiseAmount,
     int numTimesTableRaised,

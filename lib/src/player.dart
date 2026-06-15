@@ -1,5 +1,4 @@
 import 'card.dart';
-import 'betting_move.dart';
 import 'hand_rank.dart';
 
 abstract class Player {
@@ -68,9 +67,4 @@ abstract class Player {
     isFolded = true;
   }
 
-  Future<BettingMove> chooseNextMove(
-    int tableRaiseAmount,
-    int numTimesTableRaised,
-    int tableLastBet,
-  );
 }

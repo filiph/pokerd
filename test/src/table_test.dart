@@ -7,15 +7,6 @@ import 'package:pokerd/src/phase.dart';
 
 class MockConcretePlayerClass extends Player {
   MockConcretePlayerClass(super.name);
-
-  @override
-  Future<BettingMove> chooseNextMove(
-    int tableRaiseAmount,
-    int numTimesTableRaised,
-    int tableLastBet,
-  ) async {
-    return BettingMove.checked;
-  }
 }
 
 class MockTableWithIncrease extends Table {

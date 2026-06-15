@@ -3,18 +3,21 @@ import 'package:test/test.dart';
 import 'package:pokerd/src/terminal_ui.dart';
 import 'package:pokerd/src/human_player.dart';
 import 'package:pokerd/src/betting_move.dart';
+import 'package:pokerd/src/game.dart';
 
 void main() {
-  group('HumanPlayer chooseNextMove', () {
+  group('Game.getHumanMove', () {
     late StreamController<List<int>> streamController;
     late TerminalUI terminalUI;
+    late Game game;
     late HumanPlayer player;
 
     setUp(() {
       streamController = StreamController<List<int>>();
       terminalUI = TerminalUI(inputStream: streamController.stream);
       terminalUI.speed = 0; // Disable speed delays for fast test execution
-      player = HumanPlayer('Player', terminalUI);
+      game = Game(terminalUI);
+      player = game.players.firstWhere((p) => p is HumanPlayer) as HumanPlayer;
     });
 
     tearDown(() {
@@ -25,8 +28,9 @@ void main() {
     test('can increase and decrease bet using arrow keys', () async {
       player.chips = 1000;
       player.bet = 0;
+      game.table.raiseAmount = 200;
 
-      final futureMove = player.chooseNextMove(200, 0, 0);
+      final futureMove = game.getHumanMove(player);
 
       // Simulate Left arrow (no effect since customBet is at min 200)
       streamController.add([27, 91, 68]); // ESC [ D
@@ -56,8 +60,9 @@ void main() {
     test('cannot increase bet beyond player max chips', () async {
       player.chips = 250; // max total chips is chips + bet = 250
       player.bet = 0;
+      game.table.raiseAmount = 200;
 
-      final futureMove = player.chooseNextMove(200, 0, 0);
+      final futureMove = game.getHumanMove(player);
 
       // Simulate Right arrow (increase to 250, clamping since next step 300 > 250)
       streamController.add([27, 91, 67]); // ESC [ C
@@ -79,8 +84,9 @@ void main() {
     test('can choose all-in when normal bet is available', () async {
       player.chips = 1000;
       player.bet = 0;
+      game.table.raiseAmount = 200;
 
-      final futureMove = player.chooseNextMove(200, 0, 0);
+      final futureMove = game.getHumanMove(player);
 
       // Simulate 'A' to go all-in
       streamController.add([97]); // 'a'
@@ -92,8 +98,11 @@ void main() {
     test('can choose all-in when normal raise is available', () async {
       player.chips = 1000;
       player.bet = 100;
+      game.table.raiseAmount = 300;
+      game.table.numTimesRaised = 1;
+      game.table.lastBet = 200;
 
-      final futureMove = player.chooseNextMove(300, 1, 200);
+      final futureMove = game.getHumanMove(player);
 
       // Simulate 'A' to go all-in
       streamController.add([97]); // 'a'
@@ -105,8 +114,11 @@ void main() {
     test('can choose all-in when raised limit of 4 is reached', () async {
       player.chips = 1000;
       player.bet = 100;
+      game.table.raiseAmount = 300;
+      game.table.numTimesRaised = 4;
+      game.table.lastBet = 200;
 
-      final futureMove = player.chooseNextMove(300, 4, 200);
+      final futureMove = game.getHumanMove(player);
 
       // Simulate 'A' to go all-in
       streamController.add([97]); // 'a'
