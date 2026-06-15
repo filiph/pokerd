@@ -420,7 +420,6 @@ class Game {
   }
 
   Future<void> showPlayerMove(Player player, BettingMove move, int? bet) async {
-    final chips = bet == 1 ? 'chip' : 'chips';
     final bool importantMove;
     switch (move) {
       case BettingMove.folded:
@@ -433,13 +432,13 @@ class Game {
         await tui.write('${player.name} went all-in!\n\n');
         importantMove = true;
       case BettingMove.called:
-        await tui.write('${player.name} called ${player.bet} $chips. ←→\n\n');
+        await tui.write('${player.name} called ${player.bet}¤. ←→\n\n');
         importantMove = false;
       case BettingMove.bet:
-        await tui.write('${player.name} bet ${player.bet} $chips. ↑\n\n');
+        await tui.write('${player.name} bet ${player.bet}¤. ↑\n\n');
         importantMove = true;
       case BettingMove.raised:
-        await tui.write('${player.name} raised to ${player.bet} $chips. ↑\n\n');
+        await tui.write('${player.name} raised to ${player.bet}¤. ↑\n\n');
         importantMove = true;
     }
 
@@ -485,10 +484,19 @@ class Game {
     final sortedPlayers = List<Player>.from(players)
       ..sort((a, b) => (b.isInGame ? 1 : 0).compareTo(a.isInGame ? 1 : 0));
 
-    ;
+    await tui.write(
+      '${' ' * 12}    ${'HAND'.padRight(12)}   ${'BET'.padLeft(7)}'
+      '   ${'CHIPS'.padLeft(7)}   STATUS\n',
+    );
     await tui.write('=' * 79 + '\n', speedOverride: 1000);
     for (final player in sortedPlayers) {
-      if (player.isInGame) {
+      final strBuf = StringBuffer();
+      strBuf.write(player.name.padLeft(12));
+      strBuf.write(':   ');
+
+      if (!player.isInGame) {
+        strBuf.write('[OUT OF GAME]');
+      } else {
         final handStr = <String>[];
         if (player.isFolded || player.hand.isEmpty) {
           handStr.addAll(['     ', '     ']);
@@ -505,81 +513,77 @@ class Game {
             handStr.add('[###]');
           }
         }
-        final handCombined = handStr.join('  ');
-        String chipsAndBet;
+        strBuf.write(handStr.join('  '));
+
+        strBuf.write('   ');
+
+        strBuf.write('${player.bet.toString().padLeft(6)}¤');
+
+        strBuf.write('   ');
+
+        if (player.isAllIn) {
+          strBuf.write(' all-in');
+        } else {
+          strBuf.write('${player.chips.toString().padLeft(6)}¤');
+        }
+
+        strBuf.write('   ');
+
         if (isShowdown) {
-          final chipsStr = 'Chips:${player.chips.toString().padLeft(6)}';
-          chipsAndBet = '             $chipsStr';
           if (player.bestHandRank != null) {
-            chipsAndBet +=
-                '        <${player.bestHandRank!.description}${player.rankSubtype}>';
+            strBuf.write(
+              '${player.bestHandRank!.description}${player.rankSubtype}',
+            );
           }
         } else {
-          var betStr = '        Bet:${player.bet.toString().padLeft(6)}';
-          if (player.isAllIn) {
-            final chipsStr = '                   all-in';
-            if (player.bet == 0) {
-              betStr = '         ';
-            }
-            chipsAndBet = '$chipsStr$betStr';
-          } else {
-            final chipsStr = 'Chips:${player.chips.toString().padLeft(6)}';
-            chipsAndBet = '             $chipsStr$betStr';
-          }
           if (player.isDealer) {
-            chipsAndBet += '       <Dealer>';
+            strBuf.write('(Dealer)');
           }
           if (player.isSB) {
-            chipsAndBet += '       <SB>';
+            strBuf.write('(SB)');
           }
           if (player.isBB) {
-            chipsAndBet += '       <BB>';
+            strBuf.write('(BB)');
           }
         }
-        await tui.write(
-          '${player.name.padLeft(11)}\'s hand:    $handCombined$chipsAndBet\n',
-          speedOverride: 1000,
-        );
-      } else {
-        await tui.write(
-          '${player.name.padLeft(18)}:    [OUT OF CHIPS, OUT OF GAME]\n',
-          speedOverride: 1000,
-        );
       }
+      strBuf.writeln();
+
+      await tui.write(strBuf.toString(), speedOverride: 1000);
     }
     await tui.write('\n');
 
     final communityCards = table.community.map(cardStr).join('  ');
     await tui.write(
-      '${' '.padRight(9)}COMMUNITY:  $communityCards\n\n',
+      '${'Community'.padLeft(12)}:   $communityCards\n\n',
       speedOverride: 1000,
     );
 
     await tui.write(
-      '${' '.padRight(7)}Small Blind:${(table.bigBlind ~/ 2).toString().padLeft(6)}\n',
+      '${'Small Blind'.padLeft(12)}: '
+      '${(table.bigBlind ~/ 2).toString().padLeft(6)}¤\n',
       speedOverride: 1000,
     );
     await tui.write(
-      '${' '.padRight(9)}Big Blind:${table.bigBlind.toString().padLeft(6)}\n',
+      '${'Big Blind'.padLeft(12)}: '
+      '${table.bigBlind.toString().padLeft(6)}¤\n',
       speedOverride: 1000,
     );
 
     final mainPot = table.pots[0];
-    final mainChips = mainPot.amount == 1 ? 'CHIP' : 'CHIPS';
-    var potStr =
-        '${' '.padRight(15)}POT:${mainPot.amount.toString().padLeft(6)} $mainChips';
+    await tui.write(
+      '${'POT'.padLeft(12)}: '
+      '${mainPot.amount.toString().padLeft(6)}¤\n',
+      speedOverride: 1000,
+    );
     for (var i = 1; i < table.pots.length; i++) {
       final sidePot = table.pots[i];
-      final sideChips = sidePot.amount == 1 ? 'CHIP' : 'CHIPS';
-      if (i % 3 == 0) {
-        potStr +=
-            '\n${' '.padRight(7)}SIDE POT #$i:${sidePot.amount.toString().padLeft(6)} $sideChips';
-      } else {
-        potStr +=
-            '${' '.padRight(12)}SIDE POT #$i:${sidePot.amount.toString().padLeft(6)}';
-      }
+      await tui.write(
+        '${'SIDE POT #$i'.padLeft(12)}: '
+        '${sidePot.amount.toString().padLeft(6)}¤\n',
+        speedOverride: 1000,
+      );
     }
-    await tui.write('$potStr\n', speedOverride: 1000);
     await tui.write('=' * 79 + '\n', speedOverride: 1000);
   }
 

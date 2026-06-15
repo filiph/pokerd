@@ -30,22 +30,21 @@ class HumanPlayer extends Player {
           prompt = '> [A]ll-in   [F]old';
         } else {
           validMoves = ['c', 'a', 'f'];
-          prompt = '> [C]all $tableLastBet chips  [A]ll-in   [F]old';
+          prompt = '> [C]all $tableLastBet¤  [A]ll-in   [F]old';
         }
       } else if (numTimesTableRaised < 4) {
         canAdjust = true;
         if (bet == tableLastBet) {
           validMoves = ['c', 'b', 'a', 'f'];
-          prompt =
-              '> [C]heck   [B]et [←]$customBet[→] chips   [A]ll-in   [F]old';
+          prompt = '> [C]heck   [B]et [←]$customBet¤[→]   [A]ll-in   [F]old';
         } else {
           validMoves = ['c', 'r', 'a', 'f'];
           prompt =
-              '> [C]all $tableLastBet chips   [R]aise to [←]$customBet[→] chips   [A]ll-in   [F]old';
+              '> [C]all $tableLastBet¤   [R]aise to [←]$customBet¤[→]   [A]ll-in   [F]old';
         }
       } else {
         validMoves = ['c', 'a', 'f'];
-        prompt = '> [C]all $tableLastBet chips   [A]ll-in   [F]old';
+        prompt = '> [C]all $tableLastBet¤   [A]ll-in   [F]old';
       }
 
       final underlinedPrompt = ansi('\n$prompt');

@@ -240,7 +240,7 @@ class TerminalUI {
   }
 
   Future<void> waitForAnyKey() async {
-    await writeInPlace('__any_key', [ansi('Press [any] key.')]);
+    await writeInPlace('__any_key', [ansi('> Press [any] key.')]);
     await readKey();
     await writeInPlace('__any_key', []);
   }
