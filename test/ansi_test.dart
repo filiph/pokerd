@@ -25,10 +25,16 @@ void main() {
       expect(result, equals('*P*lay, *Q*uit, *←* *→*'));
     });
 
-    test('multiple character highlight like [space] or [esc] with custom style', () {
-      final result = ansi('Press [space] or [esc] to continue', style: (s) => '*$s*');
-      expect(result, equals('Press *space* or *esc* to continue'));
-    });
+    test(
+      'multiple character highlight like [space] or [esc] with custom style',
+      () {
+        final result = ansi(
+          'Press [space] or [esc] to continue',
+          style: (s) => '*$s*',
+        );
+        expect(result, equals('Press *space* or *esc* to continue'));
+      },
+    );
 
     test('unmodified for empty brackets []', () {
       expect(ansi('Hello [] world'), equals('Hello [] world'));

@@ -30,20 +30,24 @@ class HumanPlayer extends Player {
           prompt = ' >>> Press [A] to go all-in or [F] to fold.';
         } else {
           validMoves = ['c', 'a', 'f'];
-          prompt = ' >>> Press [C] to call $tableLastBet chips, [A] to go all-in, or [F] to fold.';
+          prompt =
+              ' >>> Press [C] to call $tableLastBet chips, [A] to go all-in, or [F] to fold.';
         }
       } else if (numTimesTableRaised < 4) {
         canAdjust = true;
         if (bet == tableLastBet) {
           validMoves = ['c', 'b', 'a', 'f'];
-          prompt = ' >>> Use [←]/[→] to adjust bet. Press [C] to check, [B] to bet $customBet chips, [A] to go all-in, or [F] to fold.';
+          prompt =
+              ' >>> Use [←]/[→] to adjust bet. Press [C] to check, [B] to bet $customBet chips, [A] to go all-in, or [F] to fold.';
         } else {
           validMoves = ['c', 'r', 'a', 'f'];
-          prompt = ' >>> Use [←]/[→] to adjust raise. Press [C] to call $tableLastBet chips, [R] to raise to $customBet chips, [A] to go all-in, or [F] to fold.';
+          prompt =
+              ' >>> Use [←]/[→] to adjust raise. Press [C] to call $tableLastBet chips, [R] to raise to $customBet chips, [A] to go all-in, or [F] to fold.';
         }
       } else {
         validMoves = ['c', 'a', 'f'];
-        prompt = ' >>> Press [C] to call $tableLastBet chips, [A] to go all-in, or [F] to fold.';
+        prompt =
+            ' >>> Press [C] to call $tableLastBet chips, [A] to go all-in, or [F] to fold.';
       }
 
       final underlinedPrompt = ansi('\n$prompt\n\n');

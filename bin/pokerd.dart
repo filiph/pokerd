@@ -1,7 +1,7 @@
 import 'package:args/args.dart';
 import 'package:pokerd/src/ansi.dart';
-import 'package:pokerd/src/terminal_ui.dart';
 import 'package:pokerd/src/game.dart';
+import 'package:pokerd/src/terminal_ui.dart';
 
 const String version = '0.0.1';
 
@@ -52,12 +52,7 @@ Future<void> main(List<String> arguments) async {
 
     final tui = TerminalUI();
     try {
-      await tui.write('Welcome to pokerd.\n');
-      await tui.write(
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n'
-        'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n'
-        'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi.\n',
-      );
+      await tui.write('Welcome to pokerd.\n\n');
 
       int currentSpeed = 300;
       tui.speed = currentSpeed;

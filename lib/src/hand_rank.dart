@@ -461,8 +461,7 @@ sealed class HandRank implements Comparable<HandRank> {
         rankValues.contains(4) &&
         rankValues.contains(3) &&
         rankValues.contains(2)) {
-      final buffer = StringBuffer('5')
-        ..write('0500000000');
+      final buffer = StringBuffer('5')..write('0500000000');
       return int.parse(buffer.toString());
     }
 

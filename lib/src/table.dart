@@ -130,7 +130,8 @@ class Table {
           }
         } else {
           eligiblePlayers = [
-            for (final player in activePlayers) if (player.bet > 0) player
+            for (final player in activePlayers)
+              if (player.bet > 0) player,
           ];
         }
         pots.add(Pot(0, eligiblePlayers));

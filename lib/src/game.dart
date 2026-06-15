@@ -1,15 +1,17 @@
 import 'dart:math';
+
 import 'package:tint/tint.dart';
-import 'player.dart';
-import 'computer_player.dart';
-import 'human_player.dart';
-import 'table.dart';
-import 'deck.dart';
-import 'card.dart';
-import 'phase.dart';
-import 'terminal_ui.dart';
+
 import 'betting_move.dart';
+import 'card.dart';
+import 'computer_player.dart';
+import 'deck.dart';
 import 'hand_rank.dart';
+import 'human_player.dart';
+import 'phase.dart';
+import 'player.dart';
+import 'table.dart';
+import 'terminal_ui.dart';
 
 class Game {
   Phase phase = Phase.preflop;
@@ -28,11 +30,23 @@ class Game {
     final human = HumanPlayer('Player', tui);
     players.add(human);
 
-    final names = ['Homer', 'Bart', 'Lisa', 'Marge', 'Milhouse', 'Moe', 'Maggie', 'Nelson', 'Ralph'];
-    final computerNames = names.where((name) => name != 'Player').toList()..shuffle();
+    final names = [
+      'Homer',
+      'Bart',
+      'Lisa',
+      'Marge',
+      'Milhouse',
+      'Moe',
+      'Maggie',
+      'Nelson',
+      'Ralph',
+    ];
+    final computerNames = names.where((name) => name != 'Player').toList()
+      ..shuffle();
 
     for (var i = 0; i < 4; i++) {
-      final style = ComputerPlayingStyle.values[Random().nextInt(ComputerPlayingStyle.values.length)];
+      final style = ComputerPlayingStyle
+          .values[Random().nextInt(ComputerPlayingStyle.values.length)];
       players.add(ComputerPlayer(computerNames[i], style));
     }
 
@@ -150,15 +164,16 @@ class Game {
   }
 
   Future<void> dealCards() async {
-    if (phase == Phase.preflop) {
-      await showPhaseChangeAlert(phase, dealer!.name);
-      await dealHole();
-    } else if (phase == Phase.flop) {
-      await showPhaseChangeAlert(phase, dealer!.name);
-      dealCommunity(3);
-    } else {
-      await showPhaseChangeAlert(phase, dealer!.name);
-      dealCommunity(1);
+    await showPhaseChangeAlert(phase, dealer!.name);
+    switch (phase) {
+      case Phase.preflop:
+        await dealHole();
+      case Phase.flop:
+        dealCommunity(3);
+      case Phase.turn:
+        dealCommunity(1);
+      case Phase.river:
+        dealCommunity(1);
     }
   }
 
@@ -227,7 +242,10 @@ class Game {
     }
   }
 
-  Future<void> betUntilAllLockedIn(int firstAct, List<Player> activePlayers) async {
+  Future<void> betUntilAllLockedIn(
+    int firstAct,
+    List<Player> activePlayers,
+  ) async {
     var bettingIndex = firstAct;
     while (true) {
       if (activePlayers.every((p) => p.isLocked || p.isAllIn)) {
@@ -292,7 +310,9 @@ class Game {
     if (table.pots.last.amount == 0) {
       table.pots.removeLast();
     }
-    final unfoldedPlayers = getActivePlayers().where((p) => !p.isFolded).toList();
+    final unfoldedPlayers = getActivePlayers()
+        .where((p) => !p.isFolded)
+        .toList();
     if (unfoldedPlayers.length == 1) {
       var winnings = 0;
       for (final pot in table.pots) {
@@ -310,7 +330,10 @@ class Game {
       }
       if (playersEligibleLastPot.length == 1) {
         final handWinner = playersEligibleLastPot[0];
-        await showDefaultWinnerEligibility(handWinner.name, table.pots.length - 1);
+        await showDefaultWinnerEligibility(
+          handWinner.name,
+          table.pots.length - 1,
+        );
         handWinner.chips += table.pots.last.amount;
         table.pots.removeLast();
       }
@@ -329,7 +352,10 @@ class Game {
           showdownPlayers.add(player);
         }
       }
-      final handWinners = HandRank.determineShowdownWinner(showdownPlayers, table.community);
+      final handWinners = HandRank.determineShowdownWinner(
+        showdownPlayers,
+        table.community,
+      );
       for (final winner in handWinners) {
         winner.chips += table.pots[i].amount ~/ handWinners.length;
       }
@@ -349,12 +375,17 @@ class Game {
       return true;
     } else {
       while (true) {
-        await tui.write(' >>> Continue on to next hand? Press [Enter] to continue or [N] to stop.\n\n');
+        await tui.write(
+          ' >>> Continue on to next hand? Press [Enter] to continue or [N] to stop.\n\n',
+        );
         final key = await tui.readKey();
         final char = key.char?.toLowerCase();
         if (char == 'n') {
           final maxChips = active.map((p) => p.chips).reduce(max);
-          final winnersNames = active.where((p) => p.chips == maxChips).map((p) => p.name).toList();
+          final winnersNames = active
+              .where((p) => p.chips == maxChips)
+              .map((p) => p.name)
+              .toList();
           await showGameWinners(winnersNames);
           return true;
         }
@@ -392,7 +423,9 @@ class Game {
   }
 
   Future<void> showBlindIncrease() async {
-    await tui.write(' >>> The big blind has increased to ${table.bigBlind}!\n\n');
+    await tui.write(
+      ' >>> The big blind has increased to ${table.bigBlind}!\n\n',
+    );
   }
 
   Future<void> showThinking(String playerName) async {
@@ -409,11 +442,15 @@ class Game {
       case BettingMove.allIn:
         await tui.write(' >>> ${player.name} went all-in!\n\n');
       case BettingMove.called:
-        await tui.write(' >>> ${player.name} called ${player.bet} $chips. ←→\n\n');
+        await tui.write(
+          ' >>> ${player.name} called ${player.bet} $chips. ←→\n\n',
+        );
       case BettingMove.bet:
         await tui.write(' >>> ${player.name} bet ${player.bet} $chips. ↑\n\n');
       case BettingMove.raised:
-        await tui.write(' >>> ${player.name} raised to ${player.bet} $chips. ↑\n\n');
+        await tui.write(
+          ' >>> ${player.name} raised to ${player.bet} $chips. ↑\n\n',
+        );
     }
   }
 
@@ -428,8 +465,13 @@ class Game {
     await tui.readKey();
   }
 
-  Future<void> showDefaultWinnerEligibility(String playerName, int sidePotNum) async {
-    await tui.write('\n >>> $playerName is the only player eligible for SIDE POT #$sidePotNum.\n');
+  Future<void> showDefaultWinnerEligibility(
+    String playerName,
+    int sidePotNum,
+  ) async {
+    await tui.write(
+      '\n >>> $playerName is the only player eligible for SIDE POT #$sidePotNum.\n',
+    );
     await tui.write(' >>> Gave those chips to $playerName.\n\n');
     await tui.write('Press [Enter] to continue...\n\n');
     await tui.readKey();
@@ -439,7 +481,8 @@ class Game {
     if (phase == Phase.preflop) {
       await tui.write(' >>> Preflop Round: $dealer is the dealer!\n\n');
     } else {
-      final nameCapitalized = phase.name[0].toUpperCase() + phase.name.substring(1);
+      final nameCapitalized =
+          phase.name[0].toUpperCase() + phase.name.substring(1);
       await tui.write(' >>> Round Change: the $nameCapitalized!\n\n');
     }
   }
@@ -448,7 +491,9 @@ class Game {
     final sortedPlayers = List<Player>.from(players)
       ..sort((a, b) => (b.isInGame ? 1 : 0).compareTo(a.isInGame ? 1 : 0));
 
-    await tui.write('========================================================================\n');
+    await tui.write(
+      '========================================================================\n',
+    );
     for (final player in sortedPlayers) {
       if (player.isInGame) {
         final handStr = <String>[];
@@ -473,7 +518,8 @@ class Game {
           final chipsStr = 'Chips:${player.chips.toString().padLeft(6)}';
           chipsAndBet = '             $chipsStr';
           if (player.bestHandRank != null) {
-            chipsAndBet += '        <${player.bestHandRank!.description}${player.rankSubtype}>';
+            chipsAndBet +=
+                '        <${player.bestHandRank!.description}${player.rankSubtype}>';
           }
         } else {
           var betStr = '        Bet:${player.bet.toString().padLeft(6)}';
@@ -497,9 +543,13 @@ class Game {
             chipsAndBet += '       <BB>';
           }
         }
-        await tui.write('${player.name.padLeft(11)}\'s hand:    $handCombined$chipsAndBet\n');
+        await tui.write(
+          '${player.name.padLeft(11)}\'s hand:    $handCombined$chipsAndBet\n',
+        );
       } else {
-        await tui.write('${player.name.padLeft(18)}:    [OUT OF CHIPS, OUT OF GAME]\n');
+        await tui.write(
+          '${player.name.padLeft(18)}:    [OUT OF CHIPS, OUT OF GAME]\n',
+        );
       }
     }
     await tui.write('\n');
@@ -507,44 +557,65 @@ class Game {
     final communityCards = table.community.map(cardStr).join('  ');
     await tui.write('${' '.padRight(9)}COMMUNITY:  $communityCards\n\n');
 
-    await tui.write('${' '.padRight(7)}Small Blind:${(table.bigBlind ~/ 2).toString().padLeft(6)}\n');
-    await tui.write('${' '.padRight(9)}Big Blind:${table.bigBlind.toString().padLeft(6)}\n');
+    await tui.write(
+      '${' '.padRight(7)}Small Blind:${(table.bigBlind ~/ 2).toString().padLeft(6)}\n',
+    );
+    await tui.write(
+      '${' '.padRight(9)}Big Blind:${table.bigBlind.toString().padLeft(6)}\n',
+    );
 
     final mainPot = table.pots[0];
     final mainChips = mainPot.amount == 1 ? 'CHIP' : 'CHIPS';
-    var potStr = '${' '.padRight(15)}POT:${mainPot.amount.toString().padLeft(6)} $mainChips';
+    var potStr =
+        '${' '.padRight(15)}POT:${mainPot.amount.toString().padLeft(6)} $mainChips';
     for (var i = 1; i < table.pots.length; i++) {
       final sidePot = table.pots[i];
       final sideChips = sidePot.amount == 1 ? 'CHIP' : 'CHIPS';
       if (i % 3 == 0) {
-        potStr += '\n${' '.padRight(7)}SIDE POT #$i:${sidePot.amount.toString().padLeft(6)} $sideChips';
+        potStr +=
+            '\n${' '.padRight(7)}SIDE POT #$i:${sidePot.amount.toString().padLeft(6)} $sideChips';
       } else {
-        potStr += '${' '.padRight(12)}SIDE POT #$i:${sidePot.amount.toString().padLeft(6)}';
+        potStr +=
+            '${' '.padRight(12)}SIDE POT #$i:${sidePot.amount.toString().padLeft(6)}';
       }
     }
     await tui.write('$potStr\n');
-    await tui.write('========================================================================\n\n');
+    await tui.write(
+      '========================================================================\n\n',
+    );
   }
 
-  Future<void> showShowdownResults(List<Player> handWinners, List<Player> showdownPlayers, int potNum) async {
+  Future<void> showShowdownResults(
+    List<Player> handWinners,
+    List<Player> showdownPlayers,
+    int potNum,
+  ) async {
     await showTable(isShowdown: true);
     await showPotWinners(handWinners, showdownPlayers, potNum);
     await tui.write('Press [Enter] to continue...\n\n');
     await tui.readKey();
   }
 
-  Future<void> showPotWinners(List<Player> handWinners, List<Player> showdownPlayers, int potNum) async {
+  Future<void> showPotWinners(
+    List<Player> handWinners,
+    List<Player> showdownPlayers,
+    int potNum,
+  ) async {
     var potType = 'the pot';
     if (potNum > 0) {
       potType = 'SIDE POT #$potNum';
       final playersStr = showdownPlayers.map((p) => p.name).join('   ');
-      await tui.write('           Players eligible for SIDE POT #$potNum:      $playersStr\n\n');
+      await tui.write(
+        '           Players eligible for SIDE POT #$potNum:      $playersStr\n\n',
+      );
     }
     if (handWinners.length == 1) {
       final winner = handWinners[0];
       final handStr = winner.bestHandCards.map(cardStr).join('  ');
       final rankStr = winner.bestHandRank?.description ?? '';
-      await tui.write('           $handStr      ${winner.name} won $potType with a $rankStr${winner.rankSubtype}!\n');
+      await tui.write(
+        '           $handStr      ${winner.name} won $potType with a $rankStr${winner.rankSubtype}!\n',
+      );
       if (winner.kickerCard != null) {
         final kickerStr = 'Kicker card was the ${cardStr(winner.kickerCard!)}';
         await tui.write('${kickerStr.padLeft(75)}\n\n');
@@ -558,9 +629,12 @@ class Game {
         await tui.write('           $handStr      ${winner.name}\n');
         if (i == handWinners.length - 1) {
           final rankStr = winner.bestHandRank?.description ?? '';
-          await tui.write('\n\n           Split $potType with a $rankStr${winner.rankSubtype}!\n');
+          await tui.write(
+            '\n\n           Split $potType with a $rankStr${winner.rankSubtype}!\n',
+          );
           if (winner.kickerCard != null) {
-            final kickerStr = 'Kicker card was the  ${winner.kickerCard!.rank.symbol}';
+            final kickerStr =
+                'Kicker card was the  ${winner.kickerCard!.rank.symbol}';
             await tui.write('${kickerStr.padLeft(33)}\n\n');
           }
         }
@@ -586,7 +660,8 @@ class Game {
     } else if (winnersNames.length == 2) {
       winnersStr = '${winnersNames[0]} and ${winnersNames[1]}';
     } else {
-      winnersStr = '${winnersNames.sublist(0, winnersNames.length - 1).join(', ')}, and ${winnersNames.last}';
+      winnersStr =
+          '${winnersNames.sublist(0, winnersNames.length - 1).join(', ')}, and ${winnersNames.last}';
     }
     await tui.write('    >>> $winnersStr won the game!\n\n');
     await tui.write('========================================\n');

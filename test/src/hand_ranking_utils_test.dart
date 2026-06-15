@@ -176,14 +176,16 @@ void main() {
 
     group('Showdown Winner & Kicker', () {
       test('Determine showdown winner without tie', () {
-        final p1 = TestPlayer('Player 1')..hand = [
-          const Card(CardRank.a, CardSuite.heart),
-          const Card(CardRank.k, CardSuite.spade),
-        ];
-        final p2 = TestPlayer('Player 2')..hand = [
-          const Card(CardRank.r2, CardSuite.heart),
-          const Card(CardRank.r3, CardSuite.spade),
-        ];
+        final p1 = TestPlayer('Player 1')
+          ..hand = [
+            const Card(CardRank.a, CardSuite.heart),
+            const Card(CardRank.k, CardSuite.spade),
+          ];
+        final p2 = TestPlayer('Player 2')
+          ..hand = [
+            const Card(CardRank.r2, CardSuite.heart),
+            const Card(CardRank.r3, CardSuite.spade),
+          ];
         final community = [
           const Card(CardRank.q, CardSuite.diamond),
           const Card(CardRank.j, CardSuite.club),
@@ -200,14 +202,16 @@ void main() {
       });
 
       test('Determine showdown winner with Wheel Straight', () {
-        final p1 = TestPlayer('Player 1')..hand = [
-          const Card(CardRank.a, CardSuite.heart),
-          const Card(CardRank.r5, CardSuite.spade),
-        ];
-        final p2 = TestPlayer('Player 2')..hand = [
-          const Card(CardRank.r2, CardSuite.heart),
-          const Card(CardRank.r3, CardSuite.spade),
-        ];
+        final p1 = TestPlayer('Player 1')
+          ..hand = [
+            const Card(CardRank.a, CardSuite.heart),
+            const Card(CardRank.r5, CardSuite.spade),
+          ];
+        final p2 = TestPlayer('Player 2')
+          ..hand = [
+            const Card(CardRank.r2, CardSuite.heart),
+            const Card(CardRank.r3, CardSuite.spade),
+          ];
         final community = [
           const Card(CardRank.r2, CardSuite.diamond),
           const Card(CardRank.r3, CardSuite.diamond),
@@ -225,14 +229,16 @@ void main() {
       });
 
       test('Determine showdown winner with Wheel Straight Flush', () {
-        final p1 = TestPlayer('Player 1')..hand = [
-          const Card(CardRank.a, CardSuite.heart),
-          const Card(CardRank.r5, CardSuite.heart),
-        ];
-        final p2 = TestPlayer('Player 2')..hand = [
-          const Card(CardRank.r2, CardSuite.spade),
-          const Card(CardRank.r3, CardSuite.spade),
-        ];
+        final p1 = TestPlayer('Player 1')
+          ..hand = [
+            const Card(CardRank.a, CardSuite.heart),
+            const Card(CardRank.r5, CardSuite.heart),
+          ];
+        final p2 = TestPlayer('Player 2')
+          ..hand = [
+            const Card(CardRank.r2, CardSuite.spade),
+            const Card(CardRank.r3, CardSuite.spade),
+          ];
         final community = [
           const Card(CardRank.r2, CardSuite.heart),
           const Card(CardRank.r3, CardSuite.heart),
@@ -250,14 +256,16 @@ void main() {
       });
 
       test('Determine showdown winner with kicker tie-breaker (One Pair)', () {
-        final p1 = TestPlayer('Player A')..hand = [
-          const Card(CardRank.k, CardSuite.spade),
-          const Card(CardRank.r8, CardSuite.heart),
-        ];
-        final p2 = TestPlayer('Player B')..hand = [
-          const Card(CardRank.k, CardSuite.club),
-          const Card(CardRank.r6, CardSuite.club),
-        ];
+        final p1 = TestPlayer('Player A')
+          ..hand = [
+            const Card(CardRank.k, CardSuite.spade),
+            const Card(CardRank.r8, CardSuite.heart),
+          ];
+        final p2 = TestPlayer('Player B')
+          ..hand = [
+            const Card(CardRank.k, CardSuite.club),
+            const Card(CardRank.r6, CardSuite.club),
+          ];
         final community = [
           const Card(CardRank.k, CardSuite.heart),
           const Card(CardRank.r2, CardSuite.club),
@@ -274,14 +282,16 @@ void main() {
       });
 
       test('Determine showdown winner with true tie (One Pair)', () {
-        final p1 = TestPlayer('Player A')..hand = [
-          const Card(CardRank.k, CardSuite.spade),
-          const Card(CardRank.r8, CardSuite.heart),
-        ];
-        final p2 = TestPlayer('Player B')..hand = [
-          const Card(CardRank.k, CardSuite.club),
-          const Card(CardRank.r6, CardSuite.club),
-        ];
+        final p1 = TestPlayer('Player A')
+          ..hand = [
+            const Card(CardRank.k, CardSuite.spade),
+            const Card(CardRank.r8, CardSuite.heart),
+          ];
+        final p2 = TestPlayer('Player B')
+          ..hand = [
+            const Card(CardRank.k, CardSuite.club),
+            const Card(CardRank.r6, CardSuite.club),
+          ];
         final community = [
           const Card(CardRank.k, CardSuite.heart),
           const Card(CardRank.q, CardSuite.club),
@@ -293,7 +303,10 @@ void main() {
         // Best 5 cards for both players: K, K, Q, J, 10
         final winners = HandRank.determineShowdownWinner([p1, p2], community);
         expect(winners.length, equals(2));
-        expect(winners.map((p) => p.name).toSet(), equals({'Player A', 'Player B'}));
+        expect(
+          winners.map((p) => p.name).toSet(),
+          equals({'Player A', 'Player B'}),
+        );
         expect(p1.kickerCard, isNull);
         expect(p2.kickerCard, isNull);
       });
@@ -301,13 +314,17 @@ void main() {
 
     group('Subtype Formatting Spells', () {
       test('Sixes formatting for Full House', () {
-        final p = TestPlayer('Player 1')..bestHandScore = 70611000000..bestHandRank = HandRank.fullHouse;
+        final p = TestPlayer('Player 1')
+          ..bestHandScore = 70611000000
+          ..bestHandRank = HandRank.fullHouse;
         HandRank.assignHandrankSubtypes([p]);
         expect(p.rankSubtype, equals(': Sixes over Jacks'));
       });
 
       test('Sixes formatting for Two Pair', () {
-        final p = TestPlayer('Player 1')..bestHandScore = 31106020000..bestHandRank = HandRank.twoPair;
+        final p = TestPlayer('Player 1')
+          ..bestHandScore = 31106020000
+          ..bestHandRank = HandRank.twoPair;
         HandRank.assignHandrankSubtypes([p]);
         expect(p.rankSubtype, equals(': Jacks and Sixes'));
       });

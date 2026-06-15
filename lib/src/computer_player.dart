@@ -9,7 +9,7 @@ class ComputerPlayer extends Player {
   final Random _random;
 
   ComputerPlayer(super.name, this.playingStyle, {Random? random})
-      : _random = random ?? Random();
+    : _random = random ?? Random();
 
   @override
   Future<BettingMove> chooseNextMove(

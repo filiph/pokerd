@@ -33,7 +33,8 @@ class WheelStraight extends Straight {
 }
 
 class StraightFlush extends HandRank {
-  const StraightFlush([String description = 'Straight Flush']) : super(9, description);
+  const StraightFlush([String description = 'Straight Flush'])
+    : super(9, description);
 }
 
 class WheelStraightFlush extends StraightFlush {
