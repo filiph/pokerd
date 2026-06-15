@@ -86,9 +86,10 @@ class Game {
     await resetDeck();
   }
 
-  /// Returns `true` if human player is active.
-  bool get hasActiveHumanPlayer =>
-      getActivePlayers().any((p) => p is HumanPlayer);
+  /// Returns `true` if human player is active in the current round
+  /// (is among [getActivePlayers] and is not [Player.isFolded]).
+  bool get hasActiveHumanPlayerInRound =>
+      getActivePlayers().any((p) => p is HumanPlayer && !p.isFolded);
 
   void resetPlayers() {
     for (final player in players) {
@@ -442,7 +443,9 @@ class Game {
         importantMove = true;
     }
 
-    if (importantMove && player is! HumanPlayer && hasActiveHumanPlayer) {
+    if (importantMove &&
+        player is! HumanPlayer &&
+        hasActiveHumanPlayerInRound) {
       await tui.waitForAnyKey();
     }
   }
