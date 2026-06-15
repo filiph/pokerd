@@ -81,16 +81,14 @@ class Game {
   }
 
   Future<void> resetForNextRound() async {
-    final active = getActivePlayers();
-    if (active.any((p) => p is HumanPlayer)) {
-      setGameSpeed(isFast: false);
-    } else {
-      setGameSpeed(isFast: true);
-    }
     resetPlayers();
     await resetTable();
     await resetDeck();
   }
+
+  /// Returns `true` if human player is active.
+  bool get hasActiveHumanPlayer =>
+      getActivePlayers().any((p) => p is HumanPlayer);
 
   void resetPlayers() {
     for (final player in players) {
@@ -113,7 +111,7 @@ class Game {
     await showShuffling();
   }
 
-  void setGameSpeed({required bool isFast}) {
+  void _setGameSpeed({required bool isFast}) {
     tui.speed = isFast ? 10000 : speed;
   }
 
@@ -290,9 +288,6 @@ class Game {
           }
         }
       }
-      if (move == BettingMove.folded && bettingPlayer is HumanPlayer) {
-        setGameSpeed(isFast: true);
-      }
       bettingPlayer.isLocked = true;
       bettingIndex += 1;
     }
@@ -447,7 +442,7 @@ class Game {
         importantMove = true;
     }
 
-    if (importantMove && player is! HumanPlayer) {
+    if (importantMove && player is! HumanPlayer && hasActiveHumanPlayer) {
       await tui.waitForAnyKey();
     }
   }
