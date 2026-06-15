@@ -54,16 +54,33 @@ class InputChar {
 
 class TerminalUI {
   final Stream<List<int>> _inputStream;
+  final StringSink _outputSink;
   String? _activeKey;
   int _activePhysicalLines = 0;
   int speed = 300; // Characters per second
+  int? terminalWidthOverride;
 
   StreamSubscription<List<int>>? _stdinSub;
   final _inputController = StreamController<InputChar>.broadcast();
   bool _rawModeEnabled = false;
 
-  TerminalUI({Stream<List<int>>? inputStream})
-    : _inputStream = inputStream ?? stdin;
+  TerminalUI({Stream<List<int>>? inputStream, StringSink? outputSink})
+    : _inputStream = inputStream ?? stdin,
+      _outputSink = outputSink ?? stdout;
+
+  int get terminalWidth {
+    if (terminalWidthOverride != null) {
+      return terminalWidthOverride!;
+    }
+    try {
+      if (stdout.hasTerminal) {
+        return stdout.terminalColumns;
+      }
+    } catch (_) {
+      // Safe fallback if stdout.hasTerminal or stdout.terminalColumns throws
+    }
+    return 80;
+  }
 
   List<String> _wrapLine(String line, int width) {
     if (line.isEmpty) return [''];
@@ -91,12 +108,13 @@ class TerminalUI {
     }
 
     final wrapped = <String>[];
+    final width = terminalWidth;
     for (final line in lines) {
-      wrapped.addAll(_wrapLine(line, 80));
+      wrapped.addAll(_wrapLine(line, width));
     }
 
     final wrappedText = wrapped.join('\n') + (hasTrailingNewline ? '\n' : '');
-    stdout.write(wrappedText);
+    _outputSink.write(wrappedText);
 
     int ms = 0;
     if (speed > 0) {
@@ -110,23 +128,24 @@ class TerminalUI {
   Future<void> writeInPlace(String key, List<String> lines) async {
     final isRewrite = _activeKey == key && _activePhysicalLines > 0;
     if (isRewrite) {
-      stdout.write(ansiEscapes.cursorUp(1));
-      stdout.write(ansiEscapes.eraseLines(_activePhysicalLines));
+      _outputSink.write(ansiEscapes.cursorUp(1));
+      _outputSink.write(ansiEscapes.eraseLines(_activePhysicalLines));
     } else {
       _activeKey = key;
       _activePhysicalLines = 0;
     }
 
     final wrapped = <String>[];
+    final width = terminalWidth;
     for (final line in lines) {
-      wrapped.addAll(_wrapLine(line, 80));
+      wrapped.addAll(_wrapLine(line, width));
     }
 
     _activePhysicalLines = wrapped.length;
     _activeKey = key;
 
     final output = wrapped.map((l) => '$l\n').join();
-    stdout.write(output);
+    _outputSink.write(output);
 
     final totalLength = lines.fold<int>(0, (sum, line) => sum + line.length);
     int ms = 0;
