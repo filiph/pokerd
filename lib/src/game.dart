@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:meta/meta.dart';
 import 'package:pokerd/src/ansi.dart';
+import 'package:tint/tint.dart';
 
 import 'betting_move.dart';
 import 'card.dart';
@@ -370,7 +371,10 @@ class Game {
         if (char == 'o') {
           await tui.writeInPlace('human_prompt', [
             '',
-            ansi('  > Options: [Q]uit   [H]elp   [any] key to go back'),
+            ansi(
+              '  > Options:   [Q]uit   [H]elp   '
+              'Press [any] other key to go back',
+            ),
           ]);
           final key = await tui.readKey();
           switch (key.char?.toLowerCase()) {
@@ -585,13 +589,14 @@ class Game {
 
     await tui.write(
       '${' ' * 12}    ${'HAND'.padRight(12)}   ${'BET'.padLeft(7)}'
-      '   ${'CHIPS'.padLeft(7)}   STATUS\n',
+              '   ${'CHIPS'.padLeft(7)}   STATUS'
+          .dim(),
     );
-    await tui.write('=' * 79 + '\n', speedOverride: 1000);
+    await tui.write('\n${('-' * 79).dim()}\n', speedOverride: 1000);
     for (final player in sortedPlayers) {
       final strBuf = StringBuffer();
       strBuf.write(player.name.padLeft(12));
-      strBuf.write(':   ');
+      strBuf.write('    ');
 
       if (!player.isInGame) {
         strBuf.write('[OUT OF GAME]');
@@ -614,7 +619,7 @@ class Game {
         if (player.isAllIn) {
           strBuf.write(' all-in');
         } else {
-          strBuf.write('${player.chips.toString().padLeft(6)}¤');
+          strBuf.write('${player.chips.toString().padLeft(6)}¤'.dim());
         }
 
         strBuf.write('   ');
@@ -678,7 +683,7 @@ class Game {
         speedOverride: 1000,
       );
     }
-    await tui.write('=' * 79 + '\n', speedOverride: 1000);
+    await tui.write('\n', speedOverride: 1000);
   }
 
   Future<void> showShowdownResults(
@@ -777,7 +782,7 @@ class Game {
   Future<void> showRankingsHelp() async {
     await tui.write('\nHand Rankings:\n\n');
 
-    final rankings = const [
+    final List<(String, List<Card>, String)> rankings = const [
       (
         'Royal Flush',
         [
@@ -803,11 +808,10 @@ class Game {
       (
         'Four of a Kind',
         [
-          Card(CardRank.a, CardSuite.spade),
-          Card(CardRank.a, CardSuite.heart),
-          Card(CardRank.a, CardSuite.diamond),
-          Card(CardRank.a, CardSuite.club),
-          Card(CardRank.k, CardSuite.spade),
+          Card(CardRank.r7, CardSuite.spade),
+          Card(CardRank.r7, CardSuite.heart),
+          Card(CardRank.r7, CardSuite.diamond),
+          Card(CardRank.r7, CardSuite.club),
         ],
         '0.024%',
       ),
@@ -825,11 +829,11 @@ class Game {
       (
         'Flush',
         [
-          Card(CardRank.a, CardSuite.diamond),
-          Card(CardRank.j, CardSuite.diamond),
+          Card(CardRank.k, CardSuite.diamond),
+          Card(CardRank.r10, CardSuite.diamond),
           Card(CardRank.r8, CardSuite.diamond),
-          Card(CardRank.r4, CardSuite.diamond),
-          Card(CardRank.r2, CardSuite.diamond),
+          Card(CardRank.r7, CardSuite.diamond),
+          Card(CardRank.r5, CardSuite.diamond),
         ],
         '0.20%',
       ),
@@ -847,11 +851,9 @@ class Game {
       (
         'Three of a Kind',
         [
-          Card(CardRank.q, CardSuite.spade),
-          Card(CardRank.q, CardSuite.heart),
-          Card(CardRank.q, CardSuite.diamond),
-          Card(CardRank.r10, CardSuite.spade),
+          Card(CardRank.r7, CardSuite.spade),
           Card(CardRank.r7, CardSuite.heart),
+          Card(CardRank.r7, CardSuite.diamond),
         ],
         '2.11%',
       ),
@@ -860,52 +862,50 @@ class Game {
         [
           Card(CardRank.j, CardSuite.spade),
           Card(CardRank.j, CardSuite.heart),
-          Card(CardRank.r9, CardSuite.diamond),
-          Card(CardRank.r9, CardSuite.club),
-          Card(CardRank.r5, CardSuite.spade),
+          Card(CardRank.r5, CardSuite.diamond),
+          Card(CardRank.r5, CardSuite.club),
         ],
         '4.75%',
       ),
       (
         'One Pair',
         [
-          Card(CardRank.r10, CardSuite.spade),
-          Card(CardRank.r10, CardSuite.heart),
-          Card(CardRank.r8, CardSuite.diamond),
-          Card(CardRank.r4, CardSuite.club),
-          Card(CardRank.r3, CardSuite.spade),
+          Card(CardRank.r6, CardSuite.spade),
+          Card(CardRank.r6, CardSuite.heart),
         ],
         '42.26%',
       ),
-      (
-        'High Card',
-        [
-          Card(CardRank.a, CardSuite.spade),
-          Card(CardRank.q, CardSuite.heart),
-          Card(CardRank.r10, CardSuite.diamond),
-          Card(CardRank.r7, CardSuite.club),
-          Card(CardRank.r5, CardSuite.spade),
-        ],
-        '50.12%',
-      ),
+      ('High Card', [Card(CardRank.r10, CardSuite.spade)], '50.12%'),
     ];
 
     await tui.write(
       '${' ' * 4}  ${'NAME'.padRight(15)}   '
-      '${'EXAMPLE HAND'.padRight(33)}   ODDS\n',
+      '${'EXAMPLE HAND'.padRight(29)}   ODDS\n',
     );
-    await tui.write('=' * 79 + '\n', speedOverride: 1000);
+    // await tui.write('=' * 79 + '\n', speedOverride: 1000);
     for (var i = 0; i < rankings.length; i++) {
       final rank = rankings[i];
-      final handStr = TerminalUI.formatHand(
-        rank.$2,
-        showFace: true,
-        useColor: useColor,
-      );
+
+      final strBuf = StringBuffer();
+      for (var cardIndex = 0; cardIndex < 5; cardIndex++) {
+        if (cardIndex >= rank.$2.length) {
+          strBuf.write('[···]'.dim());
+        } else {
+          final card = rank.$2[cardIndex];
+          strBuf.write(
+            TerminalUI.formatCard(card, showFace: true, useColor: useColor),
+          );
+        }
+
+        if (cardIndex < 4) {
+          strBuf.write(' ');
+        }
+      }
+
       await tui.write(
         '${'#${i + 1}'.toString().padLeft(4)}  '
         '${rank.$1.padRight(15)}   '
-        '$handStr   '
+        '${strBuf.toString()}   '
         '${rank.$3}\n',
         speedOverride: 1000,
       );

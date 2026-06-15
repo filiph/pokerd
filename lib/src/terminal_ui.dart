@@ -99,7 +99,9 @@ class TerminalUI {
 
     for (int i = 0; i < line.length; i++) {
       // Check for ANSI escape sequence
-      if (line.codeUnitAt(i) == 27 && i + 1 < line.length && line[i + 1] == '[') {
+      if (line.codeUnitAt(i) == 27 &&
+          i + 1 < line.length &&
+          line[i + 1] == '[') {
         final match = _ansiRegex.matchAsPrefix(line, i);
         if (match != null) {
           i = match.end - 1; // Skip the ANSI sequence
@@ -308,6 +310,7 @@ class TerminalUI {
     required bool showFace,
     required bool useColor,
     bool empty = false,
+    int highlightCount = 100000,
   }) {
     const separator = '  ';
 
@@ -315,9 +318,23 @@ class TerminalUI {
       return '${' ' * 5}$separator${' ' * 5}';
     }
 
-    final handStr = hand
-        .map((card) => formatCard(card, showFace: showFace, useColor: useColor))
-        .join(separator);
-    return handStr;
+    final strBuf = StringBuffer();
+
+    for (var i = 0; i < hand.length; i++) {
+      final card = hand[i];
+      final cardStr = formatCard(card, showFace: showFace, useColor: useColor);
+
+      if (showFace && i < highlightCount) {
+        strBuf.write(cardStr);
+      } else {
+        strBuf.write(cardStr.dim());
+      }
+
+      if (i < hand.length - 1) {
+        strBuf.write(separator);
+      }
+    }
+
+    return strBuf.toString();
   }
 }
