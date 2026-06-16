@@ -158,10 +158,10 @@ class TerminalUI {
     }
 
     for (var i = 0; i < output.length; i += charsPerWrite) {
+      if (i > 0) await Future<void>.delayed(Duration(milliseconds: delay));
       _outputSink.write(
         output.substring(i, min(i + charsPerWrite, output.length)),
       );
-      await Future<void>.delayed(Duration(milliseconds: delay));
     }
   }
 
