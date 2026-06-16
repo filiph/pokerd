@@ -10,3 +10,6 @@ tool/
 
 # Ignore AI context
 CONTEXT.md
+
+# Ignore docs
+docs/
