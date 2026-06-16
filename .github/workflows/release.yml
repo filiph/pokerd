@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
@@ -28,6 +29,9 @@ jobs:
           dart run grinder pkg-github-linux
           dart run grinder pkg-github-macos
           dart run grinder pkg-github-windows
+        
+      - name: Publish to pub.dev
+        run: dart pub publish --force
         
       - name: Update Homebrew Formula
         env:
