@@ -1,3 +1,7 @@
+## 1.0.5
+
+- Retry automated pub.dev release.
+
 ## 1.0.4
 
 - Test fully automated release pipeline (GitHub, pub.dev, Homebrew).
