@@ -1,6 +1,6 @@
 name: pokerd
 description: A command line Texas Hold'em implementation.
-version: 0.0.1
+version: 1.0.0
 # repository: https://github.com/my_org/my_repo
 
 environment:
