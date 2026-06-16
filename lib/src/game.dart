@@ -855,11 +855,11 @@ class Game {
       ..sort((a, b) => b.chips.compareTo(a.chips));
 
     for (final player in sortedPlayers) {
-      final nameStr = player.name.padLeft(44);
-      final chipsStr = player.chips.toString().padLeft(7);
-      await tui.write('$nameStr${chipsStr.padLeft(18)}\n');
+      final nameStr = player.name.padLeft(16);
+      final chipsStr = player.chips.toString().padLeft(18);
+      await tui.write('$nameStr$chipsStr\n');
     }
-    await tui.write('\n\n\n\n\n');
+    await tui.write('\n\n');
 
     String winnersStr;
     if (winnersNames.length == 1) {
@@ -868,12 +868,13 @@ class Game {
       winnersStr = '${winnersNames[0]} and ${winnersNames[1]}';
     } else {
       winnersStr =
-          '${winnersNames.sublist(0, winnersNames.length - 1).join(', ')}, and ${winnersNames.last}';
+          '${winnersNames.sublist(0, winnersNames.length - 1).join(', ')},'
+          ' and ${winnersNames.last}';
     }
-    await tui.write('   $winnersStr wins the game!\n\n');
-    await tui.write('========================================\n');
-    await tui.write('               GAME OVER                \n');
-    await tui.write('========================================\n\n');
+    await tui.write('· $winnersStr wins the game!\n\n\n\n');
+    await tui.write('==================================\n');
+    await tui.write('             GAME OVER            \n');
+    await tui.write('==================================\n\n\n\n');
   }
 
   Future<void> showRankingsHelp() async {
