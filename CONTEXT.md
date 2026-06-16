@@ -28,6 +28,14 @@ An extra card that does not directly form part of a hand combination but is used
 **Showdown**:
 The final stage of a hand where active players reveal their cards and compare them using **HandRank** and **Kicker**s to determine the winner(s).
 
+## Why we're not using package:poker
+
+As of 2026-06-16, we have decided not to integrate `package:poker` for hand evaluation. Our investigation revealed that its evaluator is unreliable; specifically, it misidentifies an Ace-high straight (e.g., `Ah Ks Qd Jc Th`) as "Quads" (four of a kind).
+
+However, the package offers several features that may be valuable for future implementation:
+- **Poker Range Parsing**: Capability to parse standard poker notation (e.g., `HandRange.parse("AQs-ATs, 44+")`), which our project currently lacks.
+- **Efficient Core Models**: Bitmask-based representations like `ImmutableCardSet` and `Card` indices that could significantly improve the performance of our simulation logic.
+
 ## Example Dialogue
 
 **Developer**: When evaluating a Full House, do we compare the triplet first?
