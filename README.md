@@ -18,7 +18,7 @@ brew tap filiph/tap
 brew install pokerd
 ```
 
-*(Note: Homebrew may ask you to trust the tap first. If it does, simply run `brew trust filiph/tap` as instructed by the terminal).*
+*(Note: Homebrew may ask you to trust the tap first. If it does, simply run `brew trust filiph/tap` as instructed by the terminal. Because `pokerd` compiles from source, you may also be asked to trust the official Dart tap: `brew trust dart-lang/dart`).*
 
 #### Pub.dev (macOS / Linux / Windows)
 
