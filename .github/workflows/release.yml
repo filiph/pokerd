@@ -31,7 +31,6 @@ jobs:
         
       - name: Update Homebrew Formula
         env:
-          # A Personal Access Token with 'repo' scope is required
-          # to push to the homebrew-tap repository
-          GITHUB_BEARER_TOKEN: ${{ secrets.HOMEBREW_GITHUB_TOKEN }}
+          GITHUB_USER: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.HOMEBREW_GITHUB_TOKEN }}
         run: dart run grinder pkg-homebrew-update

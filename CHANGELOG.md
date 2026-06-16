@@ -1,3 +1,7 @@
+## 1.0.3
+
+- Fix Homebrew formula push authentication.
+
 ## 1.0.2
 
 - Restrict build targets to macOS, Linux, and Windows.
