@@ -5,7 +5,7 @@ It's a sandbox for trying out strategies and building an intuition
 for the probabilities involved in poker.
 
 This is a personal project.  
-[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+[![No Maintenance Intended](https://unmaintained.tech/badge.svg)](https://unmaintained.tech/)
 
 <img width="800" height="525" alt="pokerd in motion, a screencast gif" src="https://github.com/user-attachments/assets/3789fa19-fef2-4996-8ee5-e6cdb23485a9" />
 

@@ -1,3 +1,7 @@
+## 1.0.10
+
+- Update description and README badges.
+
 ## 1.0.9
 
 - Improve Homebrew installation instructions in README.
