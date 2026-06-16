@@ -1,3 +1,7 @@
+## 1.0.9
+
+- Improve Homebrew installation instructions in README.
+
 ## 1.0.8
 
 - Update Homebrew installation instructions to mention dart-lang/dart trust requirement.
