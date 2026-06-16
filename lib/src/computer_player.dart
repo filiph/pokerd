@@ -15,6 +15,8 @@ class ComputerPlayer extends Player {
   final int monteCarloIterations;
   final Random _random;
 
+  double lastWinProb = 0.0;
+
   ComputerPlayer(
     super.name,
     this.playingStyle, {
@@ -22,6 +24,17 @@ class ComputerPlayer extends Player {
     required this.monteCarloIterations,
     Random? random,
   }) : _random = random ?? Random();
+
+  static List<ComputerPlayer> createDefaultPlayers() => [
+        ComputerPlayer('Grandma', ComputerPlayingStyle.grandma,
+            monteCarloIterations: 300),
+        ComputerPlayer('Kyle', ComputerPlayingStyle.leeroy,
+            monteCarloIterations: 100),
+        ComputerPlayer('Mr. Suitcase', ComputerPlayingStyle.suitcase,
+            monteCarloIterations: 500),
+        ComputerPlayer('Michelle', ComputerPlayingStyle.michelle,
+            monteCarloIterations: 400),
+      ];
 
   Future<BettingMove> chooseNextMove(
     ChipsAmount tableRaiseAmount,
@@ -44,6 +57,7 @@ class ComputerPlayer extends Player {
       final jitter = (_random.nextDouble() * 2 - 1) * error;
       winProb = (winProb + jitter).clamp(0.0, 1.0);
     }
+    lastWinProb = winProb;
 
     final move = switch (playingStyle) {
       ComputerPlayingStyle.grandma => _grandmaPlay(

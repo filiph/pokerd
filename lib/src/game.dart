@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:meta/meta.dart';
@@ -16,6 +17,7 @@ import 'player.dart';
 import 'table.dart';
 import 'terminal_ui.dart';
 import 'tutorial.dart';
+import 'game_event.dart';
 
 class Game {
   Phase phase = Phase.preflop;
@@ -26,8 +28,14 @@ class Game {
   final TerminalUI tui;
   final int speed;
   final bool useColor;
+  final StreamController<GameEvent>? eventController;
 
-  Game(this.tui, {this.speed = 300, this.useColor = false}) {
+  Game(
+    this.tui, {
+    this.speed = 300,
+    this.useColor = false,
+    this.eventController,
+  }) {
     setup();
   }
 
@@ -35,14 +43,7 @@ class Game {
     final human = HumanPlayer('Player');
     players.add(human);
 
-    players.add(ComputerPlayer('Grandma', .grandma, monteCarloIterations: 300));
-    players.add(ComputerPlayer('Kyle', .leeroy, monteCarloIterations: 100));
-    players.add(
-      ComputerPlayer('Mr. Suitcase', .suitcase, monteCarloIterations: 500),
-    );
-    players.add(
-      ComputerPlayer('Michelle', .michelle, monteCarloIterations: 400),
-    );
+    players.addAll(ComputerPlayer.createDefaultPlayers());
 
     for (final player in players) {
       player.chips = const ChipsAmount(10000);
@@ -51,9 +52,13 @@ class Game {
     table.bigBlind = const ChipsAmount(200);
   }
 
+  void _emit(GameEvent event) {
+    eventController?.add(event);
+  }
+
   List<Player> getActivePlayers() => players.where((p) => p.isInGame).toList();
 
-  Future<void> play() async {
+  Future<void> play({int? maxRounds}) async {
     await tui.write(
       '· Players joining: '
               '${getActivePlayers().map((p) => p.name).join(', ')}.\n'
@@ -61,7 +66,16 @@ class Game {
     );
 
     while (true) {
+      if (maxRounds != null && table.handsPlayed >= maxRounds) {
+        break;
+      }
       await resetForNextRound();
+      _emit(
+        GameEvent.roundStart(
+          roundNumber: table.handsPlayed + 1,
+          players: getActivePlayers().map((p) => p.name).toList(),
+        ),
+      );
       try {
         for (final phaseVal in Phase.values) {
           phase = phaseVal;
@@ -299,21 +313,23 @@ class Game {
         continue;
       }
       table.updateRaiseAmount(phase);
+
+      final potSize =
+          table.pots.fold<ChipsAmount>(
+            const ChipsAmount(0),
+            (sum, pot) => sum + pot.amount,
+          ) +
+          activePlayers.fold<ChipsAmount>(
+            const ChipsAmount(0),
+            (sum, p) => sum + p.bet,
+          );
+
       final BettingMove move;
       if (bettingPlayer is HumanPlayer) {
         await showTable();
         move = await getHumanMove(bettingPlayer);
         tui.write('\n');
       } else if (bettingPlayer is ComputerPlayer) {
-        final potSize =
-            table.pots.fold<ChipsAmount>(
-              const ChipsAmount(0),
-              (sum, pot) => sum + pot.amount,
-            ) +
-            activePlayers.fold<ChipsAmount>(
-              const ChipsAmount(0),
-              (sum, p) => sum + p.bet,
-            );
         move = await bettingPlayer.chooseNextMove(
           table.raiseAmount,
           table.numTimesRaised,
@@ -335,6 +351,36 @@ class Game {
       }
       final oldLastBet = table.lastBet;
       table.takeBet(bettingPlayer, move);
+
+      if (move == BettingMove.folded) {
+        _emit(
+          GameEvent.fold(
+            player: bettingPlayer.name,
+            playerCards: List.from(bettingPlayer.hand),
+            communityCards: List.from(table.community),
+            winProb:
+                (bettingPlayer is ComputerPlayer)
+                    ? (bettingPlayer as ComputerPlayer).lastWinProb
+                    : 0.0,
+          ),
+        );
+      } else {
+        _emit(
+          GameEvent.action(
+            player: bettingPlayer.name,
+            move: move,
+            playerCards: List.from(bettingPlayer.hand),
+            communityCards: List.from(table.community),
+            winProb:
+                (bettingPlayer is ComputerPlayer)
+                    ? (bettingPlayer as ComputerPlayer).lastWinProb
+                    : 0.0,
+            pot: potSize,
+            bet: bettingPlayer.bet,
+          ),
+        );
+      }
+
       await showPlayerMove(bettingPlayer, move, bettingPlayer.bet);
       if (table.lastBet > oldLastBet) {
         for (final activePlayer in activePlayers) {
@@ -494,6 +540,16 @@ class Game {
       final winner = unfoldedPlayers[0];
       winner.chips += winnings;
       await showDefaultWinnerFold(winner.name, winnings);
+      _emit(
+        GameEvent.win(
+          player: winner.name,
+          playerCards: List.from(winner.hand),
+          communityCards: List.from(table.community),
+          hand: 'Folded',
+          handRank: 'Folded',
+          pot: winnings,
+        ),
+      );
     } else {
       final playersEligibleLastPot = <Player>[];
       for (final player in table.pots.last.players) {
@@ -510,6 +566,16 @@ class Game {
           amount,
         );
         handWinner.chips += amount;
+        _emit(
+          GameEvent.win(
+            player: handWinner.name,
+            playerCards: List.from(handWinner.hand),
+            communityCards: List.from(table.community),
+            hand: 'Eligibility',
+            handRank: 'N/A',
+            pot: amount,
+          ),
+        );
         table.pots.removeLast();
       }
       while (table.community.length < 5) {
@@ -536,6 +602,30 @@ class Game {
 
       for (final winner in handWinners) {
         winner.chips += share;
+        _emit(
+          GameEvent.win(
+            player: winner.name,
+            playerCards: List.from(winner.hand),
+            communityCards: List.from(table.community),
+            hand: winner.bestHandCards.map((c) => c.pokerNotation).join(' '),
+            handRank: winner.bestHandRank.toString(),
+            pot: share,
+          ),
+        );
+      }
+
+      for (final player in showdownPlayers) {
+        if (!handWinners.contains(player)) {
+          _emit(
+            GameEvent.lose(
+              player: player.name,
+              playerCards: List.from(player.hand),
+              communityCards: List.from(table.community),
+              hand: player.bestHandCards.map((c) => c.pokerNotation).join(' '),
+              handRank: player.bestHandRank.toString(),
+            ),
+          );
+        }
       }
 
       if (remainder.value > 0) {
@@ -565,6 +655,9 @@ class Game {
       await showGameWinners([active[0].name]);
       return true;
     } else {
+      if (!players.any((p) => p is HumanPlayer)) {
+        return false;
+      }
       const tuiKey = 'press_to_continue';
       await tui.writeInPlace(tuiKey, [
         '${'●'.green()}   Continue on to next hand? ',

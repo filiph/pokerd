@@ -15,6 +15,17 @@ class Card {
     return '${rank.symbol.padRight(2, ' ')}${suite.symbol}';
   }
 
+  String get pokerNotation {
+    final r = rank == CardRank.r10 ? 'T' : rank.symbol;
+    final s = switch (suite) {
+      CardSuite.club => 'c',
+      CardSuite.diamond => 'd',
+      CardSuite.heart => 'h',
+      CardSuite.spade => 's',
+    };
+    return '$r$s';
+  }
+
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
