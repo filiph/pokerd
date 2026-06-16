@@ -1,5 +1,5 @@
 name: pokerd
-description: A sample command-line application with basic argument parsing.
+description: A command line Texas Hold'em implementation.
 version: 0.0.1
 # repository: https://github.com/my_org/my_repo
 
