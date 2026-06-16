@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:pokerd/src/betting_move.dart';
 import 'package:pokerd/src/card.dart';
 import 'package:pokerd/src/computer_player.dart';
+import 'package:pokerd/src/chips_amount.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -25,15 +26,15 @@ void main() {
         const Card(CardRank.r7, CardSuite.heart),
       ];
       // Table has a bet of 200, Grandma has 0.
-      player.bet = 0;
-      player.chips = 10000;
+      player.bet = const ChipsAmount(0);
+      player.chips = const ChipsAmount(10000);
       final move = await player.chooseNextMove(
-        400,
+        const ChipsAmount(400),
         0,
-        200,
+        const ChipsAmount(200),
         community: [],
-        potSize: 300,
-        otherBets: [200],
+        potSize: const ChipsAmount(300),
+        otherBets: [const ChipsAmount(200)],
       );
       expect(move, equals(BettingMove.folded));
     });
@@ -49,15 +50,15 @@ void main() {
         const Card(CardRank.a, CardSuite.spade),
         const Card(CardRank.a, CardSuite.heart),
       ];
-      player.bet = 0;
-      player.chips = 10000;
+      player.bet = const ChipsAmount(0);
+      player.chips = const ChipsAmount(10000);
       final move = await player.chooseNextMove(
-        400,
+        const ChipsAmount(400),
         0,
-        200,
+        const ChipsAmount(200),
         community: [],
-        potSize: 300,
-        otherBets: [200],
+        potSize: const ChipsAmount(300),
+        otherBets: [const ChipsAmount(200)],
       );
       // AA preflop is > 80% win prob vs 1 opponent
       expect(move, equals(BettingMove.called));
@@ -74,15 +75,15 @@ void main() {
         const Card(CardRank.j, CardSuite.spade),
         const Card(CardRank.r10, CardSuite.heart),
       ];
-      player.bet = 0;
-      player.chips = 10000;
+      player.bet = const ChipsAmount(0);
+      player.chips = const ChipsAmount(10000);
       final move = await player.chooseNextMove(
-        200,
+        const ChipsAmount(200),
         0,
-        0,
+        const ChipsAmount(0),
         community: [],
-        potSize: 0,
-        otherBets: [0],
+        potSize: const ChipsAmount(0),
+        otherBets: [const ChipsAmount(0)],
       );
       expect(move, equals(BettingMove.bet));
     });
@@ -104,17 +105,17 @@ void main() {
         const Card(CardRank.k, CardSuite.heart),
         const Card(CardRank.q, CardSuite.spade),
       ];
-      player.bet = 0;
-      player.chips = 10000;
+      player.bet = const ChipsAmount(0);
+      player.chips = const ChipsAmount(10000);
       // Pot is 1000, call is 100. Pot odds = 100/1100 ~= 0.09.
       // Win prob for flush draw (9 outs) is ~35% over 2 cards.
       final move = await player.chooseNextMove(
-        200,
+        const ChipsAmount(200),
         0,
-        100,
+        const ChipsAmount(100),
         community: community,
-        potSize: 1000,
-        otherBets: [100],
+        potSize: const ChipsAmount(1000),
+        otherBets: [const ChipsAmount(100)],
       );
       expect(move, anyOf(BettingMove.called, BettingMove.raised));
     });
@@ -130,16 +131,16 @@ void main() {
         const Card(CardRank.r2, CardSuite.spade),
         const Card(CardRank.r7, CardSuite.heart),
       ];
-      player.bet = 0;
-      player.chips = 10000;
+      player.bet = const ChipsAmount(0);
+      player.chips = const ChipsAmount(10000);
       // Huge bet, low win prob
       final move = await player.chooseNextMove(
-        2000,
+        const ChipsAmount(2000),
         0,
-        2000,
+        const ChipsAmount(2000),
         community: [],
-        potSize: 100,
-        otherBets: [2000],
+        potSize: const ChipsAmount(100),
+        otherBets: [const ChipsAmount(2000)],
       );
       expect(move, equals(BettingMove.folded));
     });
@@ -157,19 +158,19 @@ void main() {
         const Card(CardRank.r2, CardSuite.spade),
         const Card(CardRank.r7, CardSuite.heart),
       ];
-      player.bet = 0;
-      player.chips = 10000;
+      player.bet = const ChipsAmount(0);
+      player.chips = const ChipsAmount(10000);
 
       // We run it a few times to see if she ever DOESN'T fold
       var didNotFold = false;
       for (var i = 0; i < 20; i++) {
         final move = await player.chooseNextMove(
-          400,
+          const ChipsAmount(400),
           0,
-          200,
+          const ChipsAmount(200),
           community: [],
-          potSize: 300,
-          otherBets: [200],
+          potSize: const ChipsAmount(300),
+          otherBets: [const ChipsAmount(200)],
         );
         if (move != BettingMove.folded) {
           didNotFold = true;
@@ -201,17 +202,17 @@ void main() {
         const Card(CardRank.k, CardSuite.diamond),
         const Card(CardRank.r2, CardSuite.club),
       ];
-      player.bet = 0;
-      player.chips = 10000;
+      player.bet = const ChipsAmount(0);
+      player.chips = const ChipsAmount(10000);
       // Pot is 1000, but someone bets 5000 (huge overbet).
       // Michelle should be cautious.
       final move = await player.chooseNextMove(
-        5000,
+        const ChipsAmount(5000),
         0,
-        5000,
+        const ChipsAmount(5000),
         community: community,
-        potSize: 1000,
-        otherBets: [5000],
+        potSize: const ChipsAmount(1000),
+        otherBets: [const ChipsAmount(5000)],
       );
       expect(move, equals(BettingMove.folded));
     });
@@ -229,17 +230,17 @@ void main() {
           const Card(CardRank.a, CardSuite.spade),
           const Card(CardRank.a, CardSuite.heart),
         ];
-        player.bet = 0;
-        player.chips = 1000;
+        player.bet = const ChipsAmount(0);
+        player.chips = const ChipsAmount(1000);
 
         // Need to call 2000, but only has 1000.
         final move = await player.chooseNextMove(
-          2000,
+          const ChipsAmount(2000),
           0,
-          2000,
+          const ChipsAmount(2000),
           community: [],
-          potSize: 10000,
-          otherBets: [2000],
+          potSize: const ChipsAmount(10000),
+          otherBets: [const ChipsAmount(2000)],
         );
         expect(move, equals(BettingMove.allIn));
       },

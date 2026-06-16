@@ -5,6 +5,8 @@ import 'card.dart';
 import 'hand_rank.dart';
 import 'player.dart';
 
+import 'package:pokerd/src/chips_amount.dart';
+
 enum ComputerPlayingStyle { grandma, leeroy, suitcase, michelle }
 
 class ComputerPlayer extends Player {
@@ -22,12 +24,12 @@ class ComputerPlayer extends Player {
   }) : _random = random ?? Random();
 
   Future<BettingMove> chooseNextMove(
-    int tableRaiseAmount,
+    ChipsAmount tableRaiseAmount,
     int numTimesTableRaised,
-    int tableLastBet, {
+    ChipsAmount tableLastBet, {
     List<Card> community = const [],
-    int potSize = 0,
-    List<int> otherBets = const [],
+    ChipsAmount potSize = const ChipsAmount(0),
+    List<ChipsAmount> otherBets = const [],
   }) async {
     final numOpponents = otherBets.length;
     var winProb = HandRank.estimateWinProbability(
@@ -90,9 +92,9 @@ class ComputerPlayer extends Player {
 
   BettingMove _grandmaPlay(
     double winProb,
-    int tableRaiseAmount,
+    ChipsAmount tableRaiseAmount,
     int numTimesTableRaised,
-    int tableLastBet,
+    ChipsAmount tableLastBet,
   ) {
     // Grandma is very conservative.
     if (winProb > 0.8) {
@@ -105,7 +107,7 @@ class ComputerPlayer extends Player {
     } else if (winProb > 0.4) {
       if (bet == tableLastBet) {
         return BettingMove.checked;
-      } else if (tableLastBet - bet < chips * 0.1) {
+      } else if ((tableLastBet.value - bet.value) < chips.value * 0.1) {
         // Only call if it's cheap
         return BettingMove.called;
       }
@@ -115,9 +117,9 @@ class ComputerPlayer extends Player {
 
   BettingMove _leeroyPlay(
     double winProb,
-    int tableRaiseAmount,
+    ChipsAmount tableRaiseAmount,
     int numTimesTableRaised,
-    int tableLastBet,
+    ChipsAmount tableLastBet,
   ) {
     // Leeroy is overconfident and aggressive.
     final overconfidence = 0.2;
@@ -141,13 +143,13 @@ class ComputerPlayer extends Player {
 
   BettingMove _suitcasePlay(
     double winProb,
-    int tableRaiseAmount,
+    ChipsAmount tableRaiseAmount,
     int numTimesTableRaised,
-    int tableLastBet,
-    int potSize,
+    ChipsAmount tableLastBet,
+    ChipsAmount potSize,
   ) {
     // Suitcase uses pure pot odds.
-    final callAmount = tableLastBet - bet;
+    final callAmount = tableLastBet.value - bet.value;
     if (callAmount <= 0) {
       if (winProb > 0.6 && numTimesTableRaised < 3) {
         return BettingMove.bet;
@@ -155,8 +157,8 @@ class ComputerPlayer extends Player {
       return BettingMove.checked;
     }
 
-    final effectiveCallAmount = min(callAmount, chips);
-    final potOdds = effectiveCallAmount / (potSize + effectiveCallAmount);
+    final effectiveCallAmount = min(callAmount, chips.value);
+    final potOdds = effectiveCallAmount / (potSize.value + effectiveCallAmount);
     if (winProb > potOdds) {
       if (winProb > potOdds * 1.5 && numTimesTableRaised < 3) {
         return BettingMove.raised;
@@ -169,14 +171,14 @@ class ComputerPlayer extends Player {
 
   BettingMove _michellePlay(
     double winProb,
-    int tableRaiseAmount,
+    ChipsAmount tableRaiseAmount,
     int numTimesTableRaised,
-    int tableLastBet,
-    int potSize,
-    List<int> otherBets,
+    ChipsAmount tableLastBet,
+    ChipsAmount potSize,
+    List<ChipsAmount> otherBets,
   ) {
     // Michelle is well-rounded.
-    final callAmount = tableLastBet - bet;
+    final callAmount = tableLastBet.value - bet.value;
     if (callAmount <= 0) {
       if (winProb > 0.7 && numTimesTableRaised < 3) {
         return BettingMove.bet;
@@ -184,19 +186,21 @@ class ComputerPlayer extends Player {
       return BettingMove.checked;
     }
 
-    final effectiveCallAmount = min(callAmount, chips);
-    final potOdds = effectiveCallAmount / (potSize + effectiveCallAmount);
+    final effectiveCallAmount = min(callAmount, chips.value);
+    final potOdds = effectiveCallAmount / (potSize.value + effectiveCallAmount);
 
     // Consider others' bets as signal
     var othersConfidence = 0.0;
     if (otherBets.isNotEmpty) {
-      final maxOtherBet = otherBets.reduce(max);
-      if (maxOtherBet > tableLastBet) {
+      final maxOtherBet = otherBets.map((b) => b.value).reduce(max);
+      if (maxOtherBet > tableLastBet.value) {
         // Someone raised even more?
       }
       // Simple heuristic: if avg bet is high relative to pot, they are confident
-      final avgOtherBet = otherBets.reduce((a, b) => a + b) / otherBets.length;
-      othersConfidence = (avgOtherBet / (potSize + 1)).clamp(0.0, 1.0);
+      final avgOtherBet =
+          otherBets.map((b) => b.value).reduce((a, b) => a + b) /
+              otherBets.length;
+      othersConfidence = (avgOtherBet / (potSize.value + 1)).clamp(0.0, 1.0);
     }
 
     final adjustedWinProb = winProb * (1.0 - othersConfidence * 0.5);

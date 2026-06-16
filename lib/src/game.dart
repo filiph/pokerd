@@ -6,6 +6,7 @@ import 'package:tint/tint.dart';
 
 import 'betting_move.dart';
 import 'card.dart';
+import 'chips_amount.dart';
 import 'computer_player.dart';
 import 'deck.dart';
 import 'hand_rank.dart';
@@ -43,10 +44,10 @@ class Game {
     );
 
     for (final player in players) {
-      player.chips = 10000;
+      player.chips = const ChipsAmount(10000);
     }
 
-    table.bigBlind = 200;
+    table.bigBlind = const ChipsAmount(200);
   }
 
   List<Player> getActivePlayers() => players.where((p) => p.isInGame).toList();
@@ -230,7 +231,7 @@ class Game {
 
   Future<void> runRoundOfBetting() async {
     table.numTimesRaised = 0;
-    table.lastBet = 0;
+    table.lastBet = const ChipsAmount(0);
     table.minRaiseIncrement = table.bigBlind;
     final active = getActivePlayers();
     if (phase == Phase.preflop) {
@@ -304,8 +305,14 @@ class Game {
         tui.write('\n');
       } else if (bettingPlayer is ComputerPlayer) {
         final potSize =
-            table.pots.fold<int>(0, (sum, pot) => sum + pot.amount) +
-            activePlayers.fold<int>(0, (sum, p) => sum + p.bet);
+            table.pots.fold<ChipsAmount>(
+              const ChipsAmount(0),
+              (sum, pot) => sum + pot.amount,
+            ) +
+            activePlayers.fold<ChipsAmount>(
+              const ChipsAmount(0),
+              (sum, p) => sum + p.bet,
+            );
         move = await bettingPlayer.chooseNextMove(
           table.raiseAmount,
           table.numTimesRaised,
@@ -374,23 +381,23 @@ class Game {
         } else {
           validMoves = ['c', 'a', 'f'];
           prompt =
-              '${'●'.green()}   [C]all ${table.lastBet}¤  [A]ll-in   [F]old   [O]ptions';
+              '${'●'.green()}   [C]all ${table.lastBet}  [A]ll-in   [F]old   [O]ptions';
         }
       } else if (table.numTimesRaised < 4 && !player.onlyCallOrFold) {
         canAdjust = true;
         if (player.bet == table.lastBet) {
           validMoves = ['c', 'b', 'a', 'f'];
           prompt =
-              '${'●'.green()}   [C]heck   [B]et [←]${player.customBet}¤[→]   [A]ll-in   [F]old   [O]ptions';
+              '${'●'.green()}   [C]heck   [B]et [←]${player.customBet}[→]   [A]ll-in   [F]old   [O]ptions';
         } else {
           validMoves = ['c', 'r', 'a', 'f'];
           prompt =
-              '${'●'.green()}   [C]all ${table.lastBet}¤   [R]aise to [←]${player.customBet}¤[→]   [A]ll-in   [F]old   [O]ptions';
+              '${'●'.green()}   [C]all ${table.lastBet}   [R]aise to [←]${player.customBet}[→]   [A]ll-in   [F]old   [O]ptions';
         }
       } else {
         validMoves = ['c', 'a', 'f'];
         prompt =
-            '${'●'.green()}   [C]all ${table.lastBet}¤   [A]ll-in   [F]old   [O]ptions';
+            '${'●'.green()}   [C]all ${table.lastBet}   [A]ll-in   [F]old   [O]ptions';
       }
 
       final underlinedPrompt = ansi(prompt);
@@ -399,8 +406,8 @@ class Game {
       final key = await tui.readKey();
       if (key.isLeft && canAdjust) {
         if (player.customBet > table.raiseAmount) {
-          if (player.customBet - 100 >= table.raiseAmount) {
-            player.customBet -= 100;
+          if (player.customBet - const ChipsAmount(100) >= table.raiseAmount) {
+            player.customBet -= const ChipsAmount(100);
           } else {
             player.customBet = table.raiseAmount;
           }
@@ -408,8 +415,8 @@ class Game {
       } else if (key.isRight && canAdjust) {
         final maxBet = player.chips + player.bet;
         if (player.customBet < maxBet) {
-          if (player.customBet + 100 <= maxBet) {
-            player.customBet += 100;
+          if (player.customBet + const ChipsAmount(100) <= maxBet) {
+            player.customBet += const ChipsAmount(100);
           } else {
             player.customBet = maxBet;
           }
@@ -469,14 +476,14 @@ class Game {
   }
 
   Future<void> determineWinners() async {
-    if (table.pots.last.amount == 0) {
+    if (table.pots.last.amount == const ChipsAmount(0)) {
       table.pots.removeLast();
     }
     final unfoldedPlayers = getActivePlayers()
         .where((p) => !p.isFolded)
         .toList();
     if (unfoldedPlayers.length == 1) {
-      var winnings = 0;
+      var winnings = const ChipsAmount(0);
       for (final pot in table.pots) {
         winnings += pot.amount;
       }
@@ -527,15 +534,15 @@ class Game {
         winner.chips += share;
       }
 
-      if (remainder > 0) {
+      if (remainder.value > 0) {
         final active = getActivePlayers();
         final dealerIndex = active.indexOf(dealer!);
         for (var j = 1; j <= active.length; j++) {
           final player = active[(dealerIndex + j) % active.length];
           if (handWinners.contains(player)) {
-            player.chips += 1;
-            remainder -= 1;
-            if (remainder == 0) break;
+            player.chips += const ChipsAmount(1);
+            remainder -= const ChipsAmount(1);
+            if (remainder.value == 0) break;
           }
         }
       }
@@ -545,7 +552,7 @@ class Game {
 
   Future<bool> checkGameOver() async {
     for (final player in getActivePlayers()) {
-      if (player.chips == 0) {
+      if (player.chips == const ChipsAmount(0)) {
         player.isInGame = false;
       }
     }
@@ -563,9 +570,9 @@ class Game {
       final char = key.char?.toLowerCase();
       if (char == 'q') {
         await tui.writeInPlace(tuiKey, ['· Ending game.', '']);
-        final maxChips = active.map((p) => p.chips).reduce(max);
+        final maxChips = active.map((p) => p.chips.value).reduce(max);
         final winnersNames = active
-            .where((p) => p.chips == maxChips)
+            .where((p) => p.chips.value == maxChips)
             .map((p) => p.name)
             .toList();
         await showGameWinners(winnersNames);
@@ -589,7 +596,11 @@ class Game {
     await tui.write('· The big blind has increased to ${table.bigBlind}!\n');
   }
 
-  Future<void> showPlayerMove(Player player, BettingMove move, int? bet) async {
+  Future<void> showPlayerMove(
+    Player player,
+    BettingMove move,
+    ChipsAmount? bet,
+  ) async {
     final bool importantMove;
     final String message;
     switch (move) {
@@ -606,10 +617,10 @@ class Game {
         message = '${player.name} calls.';
         importantMove = false;
       case BettingMove.bet:
-        message = '${player.name} bets ${player.bet}¤.';
+        message = '${player.name} bets ${player.bet}.';
         importantMove = true;
       case BettingMove.raised:
-        message = '${player.name} raises to ${player.bet}¤.';
+        message = '${player.name} raises to ${player.bet}.';
         importantMove = true;
     }
 
@@ -626,21 +637,24 @@ class Game {
     await tui.write('· $playerName bets the $blindSize blind\n'.dim());
   }
 
-  Future<void> showDefaultWinnerFold(String playerName, int amount) async {
+  Future<void> showDefaultWinnerFold(
+    String playerName,
+    ChipsAmount amount,
+  ) async {
     await tui.write('· All other players fold.\n');
-    await tui.write('· $playerName wins $amount¤.\n\n');
+    await tui.write('· $playerName wins $amount.\n\n');
     await tui.waitForAnyKey();
   }
 
   Future<void> showDefaultWinnerEligibility(
     String playerName,
     int sidePotNum,
-    int amount,
+    ChipsAmount amount,
   ) async {
     await tui.write(
       '\n$playerName is the only player eligible for SIDE POT #$sidePotNum.\n',
     );
-    await tui.write('$playerName wins $amount¤.\n\n');
+    await tui.write('$playerName wins $amount.\n\n');
     await tui.waitForAnyKey();
   }
 
@@ -684,14 +698,14 @@ class Game {
 
         strBuf.write('   ');
 
-        strBuf.write('${player.bet.toString().padLeft(6)}¤');
+        strBuf.write(player.bet.toString().padLeft(7));
 
         strBuf.write('   ');
 
         if (player.isAllIn) {
           strBuf.write(' all-in');
         } else {
-          strBuf.write('${player.chips.toString().padLeft(6)}¤'.dim());
+          strBuf.write(player.chips.toString().padLeft(7).dim());
         }
 
         strBuf.write('   ');
@@ -716,7 +730,11 @@ class Game {
       }
       strBuf.writeln();
 
-      await tui.write(strBuf.toString(), speedOverride: 1000);
+      await tui.write(
+        strBuf.toString(),
+        speedOverride: 1000,
+        charsPerWrite: 50,
+      );
     }
     await tui.write('\n');
 
@@ -732,15 +750,13 @@ class Game {
 
     await tui.write(
       '${'Small Blind'.padLeft(12)}: '
-              '${(table.bigBlind ~/ 2).toString().padLeft(6)}¤'
-          .dim(),
+      '${(table.bigBlind ~/ 2).toString().padLeft(7).dim()}',
       speedOverride: 1000,
     );
     await tui.write('\n', speedOverride: 1000);
     await tui.write(
       '${'Big Blind'.padLeft(12)}: '
-              '${table.bigBlind.toString().padLeft(6)}¤'
-          .dim(),
+      '${table.bigBlind.toString().padLeft(7).dim()}',
       speedOverride: 1000,
     );
     await tui.write('\n', speedOverride: 1000);
@@ -748,14 +764,14 @@ class Game {
     final mainPot = table.pots[0];
     await tui.write(
       '${'POT'.padLeft(12)}: '
-      '${mainPot.amount.toString().padLeft(6)}¤\n',
+      '${mainPot.amount.toString().padLeft(7)}\n',
       speedOverride: 1000,
     );
     for (var i = 1; i < table.pots.length; i++) {
       final sidePot = table.pots[i];
       await tui.write(
         '${'SIDE POT #$i'.padLeft(12)}: '
-        '${sidePot.amount.toString().padLeft(6)}¤\n',
+        '${sidePot.amount.toString().padLeft(7)}\n',
         speedOverride: 1000,
       );
     }
@@ -766,7 +782,7 @@ class Game {
     List<Player> handWinners,
     List<Player> showdownPlayers,
     int potNum,
-    int amountPerWinner,
+    ChipsAmount amountPerWinner,
   ) async {
     await showTable(isShowdown: true);
     await showPotWinners(handWinners, showdownPlayers, potNum, amountPerWinner);
@@ -776,7 +792,7 @@ class Game {
     List<Player> handWinners,
     List<Player> showdownPlayers,
     int potNum,
-    int amountPerWinner,
+    ChipsAmount amountPerWinner,
   ) async {
     var potType = 'the pot';
     if (potNum > 0) {
@@ -795,7 +811,7 @@ class Game {
       );
       final rankStr = winner.bestHandRank?.description ?? '';
       await tui.write(
-        '· ${winner.name} wins $amountPerWinner¤ '
+        '· ${winner.name} wins $amountPerWinner '
         'with a $rankStr${winner.rankSubtype}!\n',
       );
       await tui.write('  $handStr\n');
@@ -816,7 +832,7 @@ class Game {
           showFace: true,
           useColor: useColor,
         );
-        await tui.write('· ${winner.name} wins $amountPerWinner¤\n');
+        await tui.write('· ${winner.name} wins $amountPerWinner\n');
         await tui.write('  $handStr\n');
         if (i == handWinners.length - 1) {
           final rankStr = winner.bestHandRank?.description ?? '';
@@ -839,9 +855,9 @@ class Game {
       ..sort((a, b) => b.chips.compareTo(a.chips));
 
     for (final player in sortedPlayers) {
-      final nameStr = player.name.padRight(12);
-      final chipsStr = 'Chips:${player.chips.toString().padLeft(6)}';
-      await tui.write('${nameStr.padLeft(44)}${chipsStr.padLeft(18)}\n');
+      final nameStr = player.name.padLeft(44);
+      final chipsStr = player.chips.toString().padLeft(7);
+      await tui.write('$nameStr${chipsStr.padLeft(18)}\n');
     }
     await tui.write('\n\n\n\n\n');
 

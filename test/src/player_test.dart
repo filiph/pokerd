@@ -2,6 +2,7 @@ import 'package:test/test.dart';
 import 'package:pokerd/src/card.dart';
 import 'package:pokerd/src/player.dart';
 import 'package:pokerd/src/hand_rank.dart';
+import 'package:pokerd/src/chips_amount.dart';
 
 class MockConcretePlayerClass extends Player {
   MockConcretePlayerClass(super.name);
@@ -17,14 +18,14 @@ void main() {
     test('test_reset', () {
       const card = Card(CardRank.r2, CardSuite.heart);
       final player = MockConcretePlayerClass('John');
-      player.chips = 5000;
+      player.chips = const ChipsAmount(5000);
       player.isDealer = true;
       player.isBB = true;
       player.isSB = true;
       player.isFolded = true;
       player.isAllIn = true;
       player.isLocked = true;
-      player.bet = 300;
+      player.bet = const ChipsAmount(300);
       player.hand = [card];
       player.bestHandCards = [card];
       player.bestHandScore = 1000;
@@ -40,7 +41,7 @@ void main() {
       expect(player.isFolded, isFalse);
       expect(player.isAllIn, isFalse);
       expect(player.isLocked, isFalse);
-      expect(player.bet, equals(0));
+      expect(player.bet, equals(const ChipsAmount(0)));
       expect(player.hand, isEmpty);
       expect(player.bestHandCards, isEmpty);
       expect(player.bestHandScore, equals(0));
@@ -50,18 +51,18 @@ void main() {
 
       // These should not change
       expect(player.name, equals('John'));
-      expect(player.chips, equals(5000));
+      expect(player.chips, equals(const ChipsAmount(5000)));
     });
 
     test('test_go_all_in', () {
       final player = MockConcretePlayerClass('John');
-      player.chips = 30;
-      player.bet = 250;
+      player.chips = const ChipsAmount(30);
+      player.bet = const ChipsAmount(250);
 
       player.goAllIn();
 
-      expect(player.chips, equals(0));
-      expect(player.bet, equals(280));
+      expect(player.chips, equals(const ChipsAmount(0)));
+      expect(player.bet, equals(const ChipsAmount(280)));
       expect(player.isAllIn, isTrue);
     });
 
@@ -77,31 +78,31 @@ void main() {
   group('PlayerMatchBet', () {
     test('test_match_bet', () {
       final player = MockConcretePlayerClass('John');
-      player.chips = 1000;
-      player.bet = 250;
+      player.chips = const ChipsAmount(1000);
+      player.bet = const ChipsAmount(250);
 
-      player.matchBet(300);
+      player.matchBet(const ChipsAmount(300));
 
-      expect(player.bet, equals(300));
-      expect(player.chips, equals(950));
+      expect(player.bet, equals(const ChipsAmount(300)));
+      expect(player.chips, equals(const ChipsAmount(950)));
     });
 
     test('test_value_error_when_player_left_with_negative_chips', () {
       final player = MockConcretePlayerClass('John');
-      player.chips = 5;
-      player.bet = 90;
+      player.chips = const ChipsAmount(5);
+      player.bet = const ChipsAmount(90);
 
-      expect(() => player.matchBet(100), throwsA(isA<ArgumentError>()));
+      expect(() => player.matchBet(const ChipsAmount(100)), throwsA(isA<ArgumentError>()));
     });
 
     test(
       'test_value_error_when_amount_to_match_less_than_players_current_bet',
       () {
         final player = MockConcretePlayerClass('John');
-        player.chips = 100000;
-        player.bet = 500;
+        player.chips = const ChipsAmount(100000);
+        player.bet = const ChipsAmount(500);
 
-        expect(() => player.matchBet(250), throwsA(isA<ArgumentError>()));
+        expect(() => player.matchBet(const ChipsAmount(250)), throwsA(isA<ArgumentError>()));
       },
     );
   });

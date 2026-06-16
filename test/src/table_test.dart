@@ -4,6 +4,7 @@ import 'package:pokerd/src/player.dart';
 import 'package:pokerd/src/betting_move.dart';
 import 'package:pokerd/src/table.dart';
 import 'package:pokerd/src/phase.dart';
+import 'package:pokerd/src/chips_amount.dart';
 
 class MockConcretePlayerClass extends Player {
   MockConcretePlayerClass(super.name);
@@ -24,45 +25,45 @@ void main() {
     test('test_reset', () {
       final activePlayers = <Player>[MockConcretePlayerClass('John')];
       final table = Table();
-      table.bigBlind = 50;
+      table.bigBlind = const ChipsAmount(50);
       table.community = [
         const Card(CardRank.r3, CardSuite.diamond),
         const Card(CardRank.r9, CardSuite.heart),
       ];
-      table.pots = [Pot(300, activePlayers)];
-      table.potTransfers = [300, 400];
-      table.lastBet = 100;
+      table.pots = [Pot(const ChipsAmount(300), activePlayers)];
+      table.potTransfers = [const ChipsAmount(300), const ChipsAmount(400)];
+      table.lastBet = const ChipsAmount(100);
       table.numTimesRaised = 1;
 
       table.reset(activePlayers);
 
       expect(table.community, isEmpty);
       expect(table.pots.length, equals(1));
-      expect(table.pots[0].amount, equals(0));
+      expect(table.pots[0].amount, equals(const ChipsAmount(0)));
       expect(table.pots[0].players, equals(activePlayers));
       expect(table.potTransfers, isEmpty);
-      expect(table.lastBet, equals(0));
+      expect(table.lastBet, equals(const ChipsAmount(0)));
       expect(table.numTimesRaised, equals(0));
       expect(table.raiseAmount, equals(table.bigBlind));
     });
 
     test('test_reset_increases_big_blind', () {
       final table = MockTableWithIncrease();
-      table.bigBlind = 50;
+      table.bigBlind = const ChipsAmount(50);
 
       table.reset([]);
 
-      expect(table.bigBlind, equals(100));
+      expect(table.bigBlind, equals(const ChipsAmount(100)));
       expect(table.raiseAmount, equals(table.bigBlind));
     });
 
     test('test_reset_does_not_increase_big_blind', () {
       final table = MockTableWithoutIncrease();
-      table.bigBlind = 50;
+      table.bigBlind = const ChipsAmount(50);
 
       table.reset([]);
 
-      expect(table.bigBlind, equals(50));
+      expect(table.bigBlind, equals(const ChipsAmount(50)));
       expect(table.raiseAmount, equals(table.bigBlind));
     });
   });
@@ -96,130 +97,130 @@ void main() {
 
   group('TestTableBettingsAndBlinds', () {
     test('test_takeSmallBlind_with_sufficient_chips', () {
-      final player = MockConcretePlayerClass('Alice')..chips = 1000;
-      final table = Table()..bigBlind = 200;
+      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(1000);
+      final table = Table()..bigBlind = const ChipsAmount(200);
       final result = table.takeSmallBlind(player);
       expect(result, isFalse);
-      expect(player.bet, equals(100));
-      expect(player.chips, equals(900));
-      expect(table.lastBet, equals(100));
+      expect(player.bet, equals(const ChipsAmount(100)));
+      expect(player.chips, equals(const ChipsAmount(900)));
+      expect(table.lastBet, equals(const ChipsAmount(100)));
     });
 
     test('test_takeSmallBlind_forcing_all_in', () {
-      final player = MockConcretePlayerClass('Alice')..chips = 50;
-      final table = Table()..bigBlind = 200;
+      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(50);
+      final table = Table()..bigBlind = const ChipsAmount(200);
       final result = table.takeSmallBlind(player);
       expect(result, isTrue);
       expect(player.isAllIn, isTrue);
-      expect(player.bet, equals(50));
-      expect(player.chips, equals(0));
-      expect(table.potTransfers, contains(50));
+      expect(player.bet, equals(const ChipsAmount(50)));
+      expect(player.chips, equals(const ChipsAmount(0)));
+      expect(table.potTransfers, contains(const ChipsAmount(50)));
     });
 
     test('test_takeBet_checks_and_calls', () {
-      final player = MockConcretePlayerClass('Alice')..chips = 1000;
-      final table = Table()..lastBet = 150;
+      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(1000);
+      final table = Table()..lastBet = const ChipsAmount(150);
       table.takeBet(player, BettingMove.called);
-      expect(player.bet, equals(150));
-      expect(player.chips, equals(850));
+      expect(player.bet, equals(const ChipsAmount(150)));
+      expect(player.chips, equals(const ChipsAmount(850)));
     });
 
     test('test_updateRaiseAmount_preflop', () {
       final table = Table()
-        ..bigBlind = 200
-        ..lastBet = 300
-        ..minRaiseIncrement = 200;
+        ..bigBlind = const ChipsAmount(200)
+        ..lastBet = const ChipsAmount(300)
+        ..minRaiseIncrement = const ChipsAmount(200);
       table.updateRaiseAmount(Phase.preflop);
-      expect(table.raiseAmount, equals(500));
+      expect(table.raiseAmount, equals(const ChipsAmount(500)));
     });
 
     test('test_updateRaiseAmount_turn', () {
       final table = Table()
-        ..bigBlind = 200
-        ..lastBet = 300
-        ..minRaiseIncrement = 400;
+        ..bigBlind = const ChipsAmount(200)
+        ..lastBet = const ChipsAmount(300)
+        ..minRaiseIncrement = const ChipsAmount(400);
       table.updateRaiseAmount(Phase.turn);
-      expect(table.raiseAmount, equals(700));
+      expect(table.raiseAmount, equals(const ChipsAmount(700)));
     });
 
     test('test_takeBet_normal_raise_updates_minRaiseIncrement', () {
-      final player = MockConcretePlayerClass('Alice')..chips = 1000;
+      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(1000);
       final table = Table()
-        ..bigBlind = 200
-        ..minRaiseIncrement = 200
+        ..bigBlind = const ChipsAmount(200)
+        ..minRaiseIncrement = const ChipsAmount(200)
         ..raiseAmount =
-            300 // Raise from 100 to 300
-        ..lastBet = 100;
+            const ChipsAmount(300) // Raise from 100 to 300
+        ..lastBet = const ChipsAmount(100);
 
       table.takeBet(player, BettingMove.raised);
 
-      expect(table.lastBet, equals(300));
-      expect(table.minRaiseIncrement, equals(200));
+      expect(table.lastBet, equals(const ChipsAmount(300)));
+      expect(table.minRaiseIncrement, equals(const ChipsAmount(200)));
       expect(table.lastRaiseWasFull, isTrue);
       expect(table.numTimesRaised, equals(1));
     });
 
     test('test_takeBet_allIn_full_raise', () {
-      final player = MockConcretePlayerClass('Alice')..chips = 500;
+      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(500);
       final table = Table()
-        ..lastBet = 100
-        ..minRaiseIncrement = 200;
+        ..lastBet = const ChipsAmount(100)
+        ..minRaiseIncrement = const ChipsAmount(200);
 
       table.takeBet(player, BettingMove.allIn);
 
-      expect(table.lastBet, equals(500));
+      expect(table.lastBet, equals(const ChipsAmount(500)));
       expect(
         table.minRaiseIncrement,
-        equals(400),
+        equals(const ChipsAmount(400)),
         reason: 'All-in for 500 when lastBet was 100 is a raise of 400',
       );
       expect(table.lastRaiseWasFull, isTrue);
     });
 
     test('test_takeBet_allIn_partial_raise', () {
-      final player = MockConcretePlayerClass('Alice')..chips = 250;
+      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(250);
       final table = Table()
-        ..lastBet = 200
-        ..minRaiseIncrement = 200;
+        ..lastBet = const ChipsAmount(200)
+        ..minRaiseIncrement = const ChipsAmount(200);
 
       table.takeBet(player, BettingMove.allIn);
 
-      expect(table.lastBet, equals(250));
+      expect(table.lastBet, equals(const ChipsAmount(250)));
       expect(
         table.minRaiseIncrement,
-        equals(200),
+        equals(const ChipsAmount(200)),
         reason: 'Partial raise should not update minRaiseIncrement',
       );
       expect(table.lastRaiseWasFull, isFalse);
     });
 
     test('test_takeBet_call_more_than_chips_converts_to_allIn', () {
-      final player = MockConcretePlayerClass('Alice')..chips = 500;
-      final table = Table()..lastBet = 1000;
+      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(500);
+      final table = Table()..lastBet = const ChipsAmount(1000);
       table.takeBet(player, BettingMove.called);
       expect(player.isAllIn, isTrue);
-      expect(player.bet, 500);
-      expect(player.chips, 0);
+      expect(player.bet, equals(const ChipsAmount(500)));
+      expect(player.chips, equals(const ChipsAmount(0)));
       expect(
         table.lastBet,
-        1000,
+        equals(const ChipsAmount(1000)),
         reason:
             'Table last bet should not decrease because someone went all-in for less',
       );
     });
 
     test('test_takeBet_raise_more_than_chips_converts_to_allIn', () {
-      final player = MockConcretePlayerClass('Alice')..chips = 500;
+      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(500);
       final table = Table()
-        ..lastBet = 100
-        ..raiseAmount = 1000;
+        ..lastBet = const ChipsAmount(100)
+        ..raiseAmount = const ChipsAmount(1000);
       table.takeBet(player, BettingMove.raised);
       expect(player.isAllIn, isTrue);
-      expect(player.bet, 500);
-      expect(player.chips, 0);
+      expect(player.bet, equals(const ChipsAmount(500)));
+      expect(player.chips, equals(const ChipsAmount(0)));
       expect(
         table.lastBet,
-        500,
+        equals(const ChipsAmount(500)),
         reason: 'Table last bet should increase to the all-in amount',
       );
     });

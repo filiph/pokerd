@@ -2,9 +2,10 @@ import 'card.dart';
 import 'player.dart';
 import 'betting_move.dart';
 import 'phase.dart';
+import 'chips_amount.dart';
 
 class Pot {
-  int amount;
+  ChipsAmount amount;
   List<Player> players;
 
   Pot(this.amount, this.players);
@@ -16,24 +17,24 @@ class Table {
   int handsPlayed = 0;
   List<Card> community = [];
   List<Pot> pots = [];
-  List<int> potTransfers = [];
-  int lastBet = 0;
-  int bigBlind = 0;
-  int raiseAmount = 0;
+  List<ChipsAmount> potTransfers = [];
+  ChipsAmount lastBet = const ChipsAmount(0);
+  ChipsAmount bigBlind = const ChipsAmount(0);
+  ChipsAmount raiseAmount = const ChipsAmount(0);
   int numTimesRaised = 0;
-  int minRaiseIncrement = 0;
+  ChipsAmount minRaiseIncrement = const ChipsAmount(0);
   bool lastRaiseWasFull = false;
 
   Table();
 
   void reset(List<Player> activePlayers) {
     community = [];
-    pots = [Pot(0, activePlayers)];
+    pots = [Pot(const ChipsAmount(0), activePlayers)];
     potTransfers = [];
-    lastBet = 0;
+    lastBet = const ChipsAmount(0);
     numTimesRaised = 0;
     if (checkIncreaseBigBlind()) {
-      bigBlind *= 2;
+      bigBlind = bigBlind * 2;
     }
     minRaiseIncrement = bigBlind;
     raiseAmount = bigBlind;
@@ -125,19 +126,19 @@ class Table {
   void calculateSidePots(List<Player> activePlayers) {
     if (potTransfers.isNotEmpty) {
       potTransfers.sort();
-      final netTransfers = <int>[];
+      final netTransfers = <ChipsAmount>[];
       for (var i = 0; i < potTransfers.length - 1; i++) {
         netTransfers.add(potTransfers[i + 1] - potTransfers[i]);
       }
       netTransfers.insert(0, potTransfers[0]);
       for (var i = 0; i < netTransfers.length; i++) {
         for (final player in activePlayers) {
-          if (player.bet == 0) {
+          if (player.bet == const ChipsAmount(0)) {
             continue;
           }
           if (player.bet < netTransfers[i]) {
             pots.last.amount += player.bet;
-            player.bet = 0;
+            player.bet = const ChipsAmount(0);
           } else {
             player.bet -= netTransfers[i];
             pots.last.amount += netTransfers[i];
@@ -154,16 +155,16 @@ class Table {
         } else {
           eligiblePlayers = [
             for (final player in activePlayers)
-              if (player.bet > 0) player,
+              if (player.bet > const ChipsAmount(0)) player,
           ];
         }
-        pots.add(Pot(0, eligiblePlayers));
+        pots.add(Pot(const ChipsAmount(0), eligiblePlayers));
       }
     }
     for (final player in activePlayers) {
-      if (player.bet > 0) {
+      if (player.bet > const ChipsAmount(0)) {
         pots.last.amount += player.bet;
-        player.bet = 0;
+        player.bet = const ChipsAmount(0);
       }
     }
     potTransfers = [];

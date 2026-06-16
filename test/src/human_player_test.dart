@@ -4,6 +4,7 @@ import 'package:pokerd/src/terminal_ui.dart';
 import 'package:pokerd/src/human_player.dart';
 import 'package:pokerd/src/betting_move.dart';
 import 'package:pokerd/src/game.dart';
+import 'package:pokerd/src/chips_amount.dart';
 
 void main() {
   group('Game.getHumanMove', () {
@@ -26,9 +27,9 @@ void main() {
     });
 
     test('can increase and decrease bet using arrow keys', () async {
-      player.chips = 1000;
-      player.bet = 0;
-      game.table.raiseAmount = 200;
+      player.chips = const ChipsAmount(1000);
+      player.bet = const ChipsAmount(0);
+      game.table.raiseAmount = const ChipsAmount(200);
 
       final futureMove = game.getHumanMove(player);
 
@@ -54,13 +55,13 @@ void main() {
       final move = await futureMove;
 
       expect(move, equals(BettingMove.bet));
-      expect(player.customBet, equals(300));
+      expect(player.customBet, equals(const ChipsAmount(300)));
     });
 
     test('cannot increase bet beyond player max chips', () async {
-      player.chips = 250; // max total chips is chips + bet = 250
-      player.bet = 0;
-      game.table.raiseAmount = 200;
+      player.chips = const ChipsAmount(250); // max total chips is chips + bet = 250
+      player.bet = const ChipsAmount(0);
+      game.table.raiseAmount = const ChipsAmount(200);
 
       final futureMove = game.getHumanMove(player);
 
@@ -78,13 +79,13 @@ void main() {
       final move = await futureMove;
 
       expect(move, equals(BettingMove.bet));
-      expect(player.customBet, equals(250));
+      expect(player.customBet, equals(const ChipsAmount(250)));
     });
 
     test('can choose all-in when normal bet is available', () async {
-      player.chips = 1000;
-      player.bet = 0;
-      game.table.raiseAmount = 200;
+      player.chips = const ChipsAmount(1000);
+      player.bet = const ChipsAmount(0);
+      game.table.raiseAmount = const ChipsAmount(200);
 
       final futureMove = game.getHumanMove(player);
 
@@ -96,11 +97,11 @@ void main() {
     });
 
     test('can choose all-in when normal raise is available', () async {
-      player.chips = 1000;
-      player.bet = 100;
-      game.table.raiseAmount = 300;
+      player.chips = const ChipsAmount(1000);
+      player.bet = const ChipsAmount(100);
+      game.table.raiseAmount = const ChipsAmount(300);
       game.table.numTimesRaised = 1;
-      game.table.lastBet = 200;
+      game.table.lastBet = const ChipsAmount(200);
 
       final futureMove = game.getHumanMove(player);
 
@@ -112,11 +113,11 @@ void main() {
     });
 
     test('can choose all-in when raised limit of 4 is reached', () async {
-      player.chips = 1000;
-      player.bet = 100;
-      game.table.raiseAmount = 300;
+      player.chips = const ChipsAmount(1000);
+      player.bet = const ChipsAmount(100);
+      game.table.raiseAmount = const ChipsAmount(300);
       game.table.numTimesRaised = 4;
-      game.table.lastBet = 200;
+      game.table.lastBet = const ChipsAmount(200);
 
       final futureMove = game.getHumanMove(player);
 

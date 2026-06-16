@@ -1,10 +1,11 @@
 import 'card.dart';
 import 'hand_rank.dart';
+import 'chips_amount.dart';
 
 abstract class Player {
   final String name;
-  int chips = 0;
-  int bet = 0;
+  ChipsAmount chips = const ChipsAmount(0);
+  ChipsAmount bet = const ChipsAmount(0);
   List<Card> hand = [];
   bool isDealer = false;
   bool isBB = false;
@@ -23,7 +24,7 @@ abstract class Player {
   Player(this.name);
 
   void reset() {
-    bet = 0;
+    bet = const ChipsAmount(0);
     hand = [];
     isDealer = false;
     isBB = false;
@@ -39,7 +40,7 @@ abstract class Player {
     kickerCard = null;
   }
 
-  int matchBet(int amount) {
+  ChipsAmount matchBet(ChipsAmount amount) {
     if (amount < bet) {
       throw ArgumentError(
         'Player $name made an illegal bet. '
@@ -50,10 +51,10 @@ abstract class Player {
     final n = (bet - amount).abs();
     chips -= n;
     bet += n;
-    if (chips < 0) {
+    if (chips < const ChipsAmount(0)) {
       throw ArgumentError(
         'Player $name made an illegal bet. '
-        'Player left with $chips chips.',
+        'Player left with $chips.',
       );
     }
     return bet;
@@ -61,7 +62,7 @@ abstract class Player {
 
   void goAllIn() {
     bet += chips;
-    chips = 0;
+    chips = const ChipsAmount(0);
     isAllIn = true;
   }
 
