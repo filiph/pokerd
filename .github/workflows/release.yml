@@ -10,7 +10,7 @@ permissions:
   id-token: write
 
 jobs:
-  release:
+  publish-and-homebrew:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,20 +21,47 @@ jobs:
       - name: Install dependencies
         run: dart pub get
         
-      - name: Build and Release to GitHub
-        env:
-          GITHUB_BEARER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          dart run grinder pkg-github-release
-          dart run grinder pkg-github-linux
-          dart run grinder pkg-github-macos
-          dart run grinder pkg-github-windows
-        
       - name: Publish to pub.dev
         run: dart pub publish --force
+        
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create ${{ github.ref_name }} --generate-notes --title "pokerd ${{ github.ref_name }}"
         
       - name: Update Homebrew Formula
         env:
           GITHUB_USER: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.HOMEBREW_GITHUB_TOKEN }}
         run: dart run grinder pkg-homebrew-update
+
+  build-executables:
+    needs: publish-and-homebrew
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            output: pokerd-linux-x64
+          - os: macos-latest
+            output: pokerd-macos-arm64
+          - os: macos-13
+            output: pokerd-macos-x64
+          - os: windows-latest
+            output: pokerd-windows-x64.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        
+      - name: Install dependencies
+        run: dart pub get
+        
+      - name: Compile executable
+        run: dart compile exe bin/pokerd.dart -o ${{ matrix.output }}
+        
+      - name: Upload to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ github.ref_name }} ${{ matrix.output }}

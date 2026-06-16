@@ -1,3 +1,7 @@
+## 1.0.11
+
+- Switch GitHub Releases to true single-file native executables.
+
 ## 1.0.10
 
 - Update description and README badges.
