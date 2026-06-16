@@ -15,6 +15,7 @@ import 'phase.dart';
 import 'player.dart';
 import 'table.dart';
 import 'terminal_ui.dart';
+import 'tutorial.dart';
 
 class Game {
   Phase phase = Phase.preflop;
@@ -438,7 +439,7 @@ class Game {
               await tui.writeInPlace('human_prompt', ['', 'Ending game.', '']);
               throw _QuitException();
             case 'h':
-              await showRankingsHelp();
+              await showRankingsHelp(tui, useColor: useColor);
             default:
               // Pass.
               break;
@@ -877,138 +878,6 @@ class Game {
     await tui.write('==================================\n\n\n\n');
   }
 
-  Future<void> showRankingsHelp() async {
-    await tui.write('\nHand Rankings:\n\n');
-
-    final List<(String, List<Card>, String)> rankings = const [
-      (
-        'Royal Flush',
-        [
-          Card(CardRank.a, CardSuite.spade),
-          Card(CardRank.k, CardSuite.spade),
-          Card(CardRank.q, CardSuite.spade),
-          Card(CardRank.j, CardSuite.spade),
-          Card(CardRank.r10, CardSuite.spade),
-        ],
-        '0.00015%',
-      ),
-      (
-        'Straight Flush',
-        [
-          Card(CardRank.r9, CardSuite.heart),
-          Card(CardRank.r8, CardSuite.heart),
-          Card(CardRank.r7, CardSuite.heart),
-          Card(CardRank.r6, CardSuite.heart),
-          Card(CardRank.r5, CardSuite.heart),
-        ],
-        '0.0014%',
-      ),
-      (
-        'Four of a Kind',
-        [
-          Card(CardRank.r7, CardSuite.spade),
-          Card(CardRank.r7, CardSuite.heart),
-          Card(CardRank.r7, CardSuite.diamond),
-          Card(CardRank.r7, CardSuite.club),
-        ],
-        '0.024%',
-      ),
-      (
-        'Full House',
-        [
-          Card(CardRank.k, CardSuite.spade),
-          Card(CardRank.k, CardSuite.heart),
-          Card(CardRank.k, CardSuite.diamond),
-          Card(CardRank.q, CardSuite.spade),
-          Card(CardRank.q, CardSuite.heart),
-        ],
-        '0.14%',
-      ),
-      (
-        'Flush',
-        [
-          Card(CardRank.k, CardSuite.diamond),
-          Card(CardRank.r10, CardSuite.diamond),
-          Card(CardRank.r8, CardSuite.diamond),
-          Card(CardRank.r7, CardSuite.diamond),
-          Card(CardRank.r5, CardSuite.diamond),
-        ],
-        '0.20%',
-      ),
-      (
-        'Straight',
-        [
-          Card(CardRank.r10, CardSuite.spade),
-          Card(CardRank.r9, CardSuite.heart),
-          Card(CardRank.r8, CardSuite.diamond),
-          Card(CardRank.r7, CardSuite.club),
-          Card(CardRank.r6, CardSuite.spade),
-        ],
-        '0.39%',
-      ),
-      (
-        'Three of a Kind',
-        [
-          Card(CardRank.r7, CardSuite.spade),
-          Card(CardRank.r7, CardSuite.heart),
-          Card(CardRank.r7, CardSuite.diamond),
-        ],
-        '2.11%',
-      ),
-      (
-        'Two Pair',
-        [
-          Card(CardRank.j, CardSuite.spade),
-          Card(CardRank.j, CardSuite.heart),
-          Card(CardRank.r5, CardSuite.diamond),
-          Card(CardRank.r5, CardSuite.club),
-        ],
-        '4.75%',
-      ),
-      (
-        'One Pair',
-        [
-          Card(CardRank.r6, CardSuite.spade),
-          Card(CardRank.r6, CardSuite.heart),
-        ],
-        '42.26%',
-      ),
-      ('High Card', [Card(CardRank.r10, CardSuite.spade)], '50.12%'),
-    ];
-
-    await tui.write(
-      '${' ' * 4}  ${'NAME'.padRight(15)}   '
-      '${'EXAMPLE HAND'.padRight(29)}   ODDS\n',
-    );
-    // await tui.write('=' * 79 + '\n', speedOverride: 1000);
-    for (var i = 0; i < rankings.length; i++) {
-      final rank = rankings[i];
-
-      final strBuf = StringBuffer();
-      for (var cardIndex = 0; cardIndex < 5; cardIndex++) {
-        if (cardIndex >= rank.$2.length) {
-          strBuf.write('[···]'.dim());
-        } else {
-          final card = rank.$2[cardIndex];
-          strBuf.write(
-            TerminalUI.formatCard(card, showFace: true, useColor: useColor),
-          );
-        }
-
-        if (cardIndex < 4) {
-          strBuf.write(' ');
-        }
-      }
-
-      await tui.write(
-        '${'#${i + 1}'.toString().padLeft(4)}  '
-        '${rank.$1.padRight(15)}   '
-        '${strBuf.toString()}   '
-        '${rank.$3}\n',
-        speedOverride: 1000,
-      );
-    }
-  }
 }
 
 class _QuitException implements Exception {

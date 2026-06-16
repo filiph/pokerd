@@ -2,6 +2,7 @@ import 'package:args/args.dart';
 import 'package:pokerd/src/ansi.dart';
 import 'package:pokerd/src/game.dart';
 import 'package:pokerd/src/terminal_ui.dart';
+import 'package:pokerd/src/tutorial.dart';
 import 'package:tint/tint.dart';
 
 const String version = '0.0.1';
@@ -59,7 +60,7 @@ Future<void> main(List<String> arguments) async {
       bool running = true;
       while (running) {
         await tui.writeInPlace('menu', [
-          ansi('${'●'.green()}   [S]tart tournament   [Q]uit'),
+          ansi('${'●'.green()}   [S]tart tournament   [R]ules   [Q]uit'),
         ]);
 
         final key = await tui.readKey();
@@ -68,6 +69,8 @@ Future<void> main(List<String> arguments) async {
           await tui.write('\n· Starting tournament...\n'.dim());
           final game = Game(tui);
           await game.play();
+        } else if (key.isR) {
+          await showRules(tui);
         } else if (key.isQ) {
           await tui.write('\nGood bye.\n');
           running = false;
