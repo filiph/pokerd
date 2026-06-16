@@ -1,0 +1,12 @@
+# Ignore build artifacts
+build/
+
+# Ignore IDE files
+*.iml
+.idea/
+
+# Ignore release tooling
+tool/
+
+# Ignore AI context
+CONTEXT.md
