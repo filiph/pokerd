@@ -36,6 +36,7 @@ class InputChar {
   bool get isRight => special == SpecialKey.right;
   bool get isUp => special == SpecialKey.up;
   bool get isDown => special == SpecialKey.down;
+  bool get isA => char?.toLowerCase() == 'a';
   bool get isP => char?.toLowerCase() == 'p';
   bool get isQ => char?.toLowerCase() == 'q';
   bool get isR => char?.toLowerCase() == 'r';
