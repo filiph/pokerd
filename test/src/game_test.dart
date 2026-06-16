@@ -14,9 +14,15 @@ class MockTerminalUI extends TerminalUI {
   MockTerminalUI(this.keys);
 
   @override
-  Future<void> write(String text, {int? speedOverride}) async {}
+  Future<void> write(
+    String text, {
+    int? speedOverride,
+    int? charsPerWrite,
+  }) async {}
+
   @override
   Future<void> writeInPlace(String key, List<String> lines) async {}
+
   @override
   Future<InputChar> readKey() async {
     if (_keyIndex < keys.length) {
@@ -26,7 +32,7 @@ class MockTerminalUI extends TerminalUI {
   }
 
   @override
-  Future<void> waitForAnyKey() async {}
+  Future<void> waitForAnyKey({String? withLine}) async {}
 }
 
 class TestPlayer extends Player {

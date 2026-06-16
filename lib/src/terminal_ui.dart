@@ -36,8 +36,9 @@ class InputChar {
   bool get isRight => special == SpecialKey.right;
   bool get isUp => special == SpecialKey.up;
   bool get isDown => special == SpecialKey.down;
-  bool get isQ => char?.toLowerCase() == 'q';
   bool get isP => char?.toLowerCase() == 'p';
+  bool get isQ => char?.toLowerCase() == 'q';
+  bool get isS => char?.toLowerCase() == 's';
 
   @override
   bool operator ==(Object other) {
@@ -59,6 +60,7 @@ class InputChar {
 
 class TerminalUI {
   static final _ansiRegex = RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]');
+  static const defaultCharsPerWrite = 10;
 
   final Stream<List<int>> _inputStream;
   final StringSink _outputSink;
@@ -66,7 +68,6 @@ class TerminalUI {
   int _activePhysicalLines = 0;
   int speed = 300; // Characters per second
   int? terminalWidthOverride;
-  int charsPerWrite = 10;
 
   StreamSubscription<List<int>>? _stdinSub;
   final _inputController = StreamController<InputChar>.broadcast();
@@ -126,7 +127,13 @@ class TerminalUI {
     return chunks;
   }
 
-  Future<void> write(String text, {int? speedOverride}) async {
+  Future<void> write(
+    String text, {
+    int? speedOverride,
+    int? charsPerWrite,
+  }) async {
+    charsPerWrite = charsPerWrite ?? defaultCharsPerWrite;
+
     _activeKey = null;
     _activePhysicalLines = 0;
 
@@ -265,10 +272,20 @@ class TerminalUI {
     return completer.future;
   }
 
-  Future<void> waitForAnyKey() async {
-    await writeInPlace('__any_key', [ansi('> Press [any] key.')]);
+  Future<void> waitForAnyKey({String? withLine}) async {
+    if (withLine == null) {
+      await writeInPlace('__any_key', [ansi('● Press [any] key.').dim()]);
+      await readKey();
+      await writeInPlace('__any_key', const []);
+      return;
+    }
+
+    final inPlaceKey = '__any_key_${withLine.hashCode}';
+    await writeInPlace(inPlaceKey, [
+      '$withLine   ${ansi('Press [any] key.').dim()}',
+    ]);
     await readKey();
-    await writeInPlace('__any_key', []);
+    await writeInPlace(inPlaceKey, [withLine]);
   }
 
   void dispose() {

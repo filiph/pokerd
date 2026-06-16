@@ -22,10 +22,10 @@ class Game {
   Player? dealer;
   final Table table = Table();
   final TerminalUI tui;
-  int speed = 300;
-  bool useColor = false;
+  final int speed;
+  final bool useColor;
 
-  Game(this.tui) {
+  Game(this.tui, {this.speed = 300, this.useColor = false}) {
     setup();
   }
 
@@ -34,7 +34,7 @@ class Game {
     players.add(human);
 
     players.add(ComputerPlayer('Grandma', .grandma, monteCarloIterations: 300));
-    players.add(ComputerPlayer('Leeroy', .leeroy, monteCarloIterations: 100));
+    players.add(ComputerPlayer('Kyle', .leeroy, monteCarloIterations: 100));
     players.add(
       ComputerPlayer('Mr. Suitcase', .suitcase, monteCarloIterations: 500),
     );
@@ -52,6 +52,12 @@ class Game {
   List<Player> getActivePlayers() => players.where((p) => p.isInGame).toList();
 
   Future<void> play() async {
+    await tui.write(
+      '· Players joining: '
+              '${getActivePlayers().map((p) => p.name).join(', ')}.\n'
+          .dim(),
+    );
+
     while (true) {
       await resetForNextRound();
       try {
@@ -155,17 +161,51 @@ class Game {
     }
   }
 
+  /// Deals cards for the current [phase].
   Future<void> dealCards() async {
     await showPhaseChangeAlert(phase, dealer!.name);
+
+    Future<void> showPlayerVisibleCards(
+      String preambule,
+      List<Card> cards,
+    ) async {
+      final slow = hasActiveHumanPlayerInRound;
+
+      await tui.write('· $preambule:  ');
+      if (slow) await Future<void>.delayed(Duration(milliseconds: 300));
+      await tui.write(
+        TerminalUI.formatHand(cards, showFace: true, useColor: useColor),
+        speedOverride: slow ? speed ~/ 10 : null,
+        charsPerWrite: 1,
+      );
+      if (slow) await Future<void>.delayed(Duration(milliseconds: 300));
+      await tui.write('\n');
+    }
+
     switch (phase) {
       case Phase.preflop:
         await dealHole();
+
+        if (hasActiveHumanPlayerInRound) {
+          final humanPlayer =
+              players.firstWhere((p) => p is HumanPlayer) as HumanPlayer;
+          await showPlayerVisibleCards(
+            '${humanPlayer.name} got',
+            humanPlayer.hand,
+          );
+        }
+
       case Phase.flop:
-        dealCommunity(3);
+        final cards = dealCommunity(3);
+        await showPlayerVisibleCards('Flop cards', cards);
+
       case Phase.turn:
-        dealCommunity(1);
+        final cards = dealCommunity(1);
+        await showPlayerVisibleCards('Turn cards', cards);
+
       case Phase.river:
-        dealCommunity(1);
+        final cards = dealCommunity(1);
+        await showPlayerVisibleCards('River cards', cards);
     }
   }
 
@@ -177,21 +217,15 @@ class Game {
         player.hand.addAll(cards);
       }
     }
-
-    if (hasActiveHumanPlayerInRound) {
-      final humanPlayer =
-          players.firstWhere((p) => p is HumanPlayer) as HumanPlayer;
-      await tui.write(
-        '${humanPlayer.name} got:  '
-        '${TerminalUI.formatHand(humanPlayer.hand, showFace: true, useColor: useColor)}\n\n',
-      );
-    }
   }
 
-  void dealCommunity(int n) {
+  /// Deals [n] community cards, burning one card first.
+  /// Adds the cards to [Table.community] and returns them.
+  List<Card> dealCommunity(int n) {
     deck.burn();
     final cards = deck.deal(n);
     table.community.addAll(cards);
+    return cards;
   }
 
   Future<void> runRoundOfBetting() async {
@@ -267,6 +301,7 @@ class Game {
       if (bettingPlayer is HumanPlayer) {
         await showTable();
         move = await getHumanMove(bettingPlayer);
+        tui.write('\n');
       } else if (bettingPlayer is ComputerPlayer) {
         final potSize =
             table.pots.fold<int>(0, (sum, pot) => sum + pot.amount) +
@@ -335,25 +370,27 @@ class Game {
         // If not enough chips to call
         if (player.chips <= (player.bet - table.lastBet).abs()) {
           validMoves = ['f', 'a'];
-          prompt = '> [A]ll-in   [F]old   [O]ptions';
+          prompt = '${'●'.green()}   [A]ll-in   [F]old   [O]ptions';
         } else {
           validMoves = ['c', 'a', 'f'];
-          prompt = '> [C]all ${table.lastBet}¤  [A]ll-in   [F]old   [O]ptions';
+          prompt =
+              '${'●'.green()}   [C]all ${table.lastBet}¤  [A]ll-in   [F]old   [O]ptions';
         }
       } else if (table.numTimesRaised < 4 && !player.onlyCallOrFold) {
         canAdjust = true;
         if (player.bet == table.lastBet) {
           validMoves = ['c', 'b', 'a', 'f'];
           prompt =
-              '> [C]heck   [B]et [←]${player.customBet}¤[→]   [A]ll-in   [F]old   [O]ptions';
+              '${'●'.green()}   [C]heck   [B]et [←]${player.customBet}¤[→]   [A]ll-in   [F]old   [O]ptions';
         } else {
           validMoves = ['c', 'r', 'a', 'f'];
           prompt =
-              '> [C]all ${table.lastBet}¤   [R]aise to [←]${player.customBet}¤[→]   [A]ll-in   [F]old   [O]ptions';
+              '${'●'.green()}   [C]all ${table.lastBet}¤   [R]aise to [←]${player.customBet}¤[→]   [A]ll-in   [F]old   [O]ptions';
         }
       } else {
         validMoves = ['c', 'a', 'f'];
-        prompt = '> [C]all ${table.lastBet}¤   [A]ll-in   [F]old   [O]ptions';
+        prompt =
+            '${'●'.green()}   [C]all ${table.lastBet}¤   [A]ll-in   [F]old   [O]ptions';
       }
 
       final underlinedPrompt = ansi(prompt);
@@ -384,7 +421,7 @@ class Game {
           await tui.writeInPlace('human_prompt', [
             '',
             ansi(
-              '  > Options:   [Q]uit   [H]elp   '
+              '${'●'.dim()} ${'●'.green()}   Options:   [Q]uit   [H]elp   '
               'Press [any] other key to go back',
             ),
           ]);
@@ -519,13 +556,13 @@ class Game {
     } else {
       const tuiKey = 'press_to_continue';
       await tui.writeInPlace(tuiKey, [
-        '> Continue on to next hand?',
-        ansi('> Press [Q] to stop, [any] other key to continue.'),
+        '${'●'.green()}   Continue on to next hand? ',
+        ansi('    Press [Q] to stop, [any] other key to continue.'),
       ]);
       final key = await tui.readKey();
       final char = key.char?.toLowerCase();
       if (char == 'q') {
-        await tui.writeInPlace(tuiKey, ['Ending game.', '']);
+        await tui.writeInPlace(tuiKey, ['· Ending game.', '']);
         final maxChips = active.map((p) => p.chips).reduce(max);
         final winnersNames = active
             .where((p) => p.chips == maxChips)
@@ -534,61 +571,64 @@ class Game {
         await showGameWinners(winnersNames);
         return true;
       } else {
-        await tui.writeInPlace(tuiKey, ['Continuing.', '']);
+        await tui.writeInPlace(tuiKey, ['· Continuing.', '']);
         return false;
       }
     }
   }
 
   Future<void> showShuffling() async {
-    await tui.write('Deck is being shuffled...\n\n');
+    await tui.write('· Deck is being shuffled...\n'.dim());
   }
 
   Future<void> showDealingHole(String dealerName) async {
-    await tui.write('$dealerName is dealing cards to players...\n\n');
+    await tui.write('· $dealerName is dealing cards to players...\n'.dim());
   }
 
   Future<void> showBlindIncrease() async {
-    await tui.write('The big blind has increased to ${table.bigBlind}!\n\n');
+    await tui.write('· The big blind has increased to ${table.bigBlind}!\n');
   }
 
   Future<void> showPlayerMove(Player player, BettingMove move, int? bet) async {
     final bool importantMove;
+    final String message;
     switch (move) {
       case BettingMove.folded:
-        await tui.write('${player.name} folds.\n\n');
+        message = '${player.name} folds.';
         importantMove = true;
       case BettingMove.checked:
-        await tui.write('${player.name} checks.\n\n');
+        message = '${player.name} checks.';
         importantMove = false;
       case BettingMove.allIn:
-        await tui.write('${player.name} goes all-in!\n\n');
+        message = '${player.name} goes all-in!';
         importantMove = true;
       case BettingMove.called:
-        await tui.write('${player.name} calls.\n\n');
+        message = '${player.name} calls.';
         importantMove = false;
       case BettingMove.bet:
-        await tui.write('${player.name} bets ${player.bet}¤.\n\n');
+        message = '${player.name} bets ${player.bet}¤.';
         importantMove = true;
       case BettingMove.raised:
-        await tui.write('${player.name} raises to ${player.bet}¤.\n\n');
+        message = '${player.name} raises to ${player.bet}¤.';
         importantMove = true;
     }
 
     if (importantMove &&
         player is! HumanPlayer &&
         hasActiveHumanPlayerInRound) {
-      await tui.waitForAnyKey();
+      await tui.waitForAnyKey(withLine: '· $message');
+    } else {
+      await tui.write('· $message\n'.dim());
     }
   }
 
   Future<void> showBetBlind(String playerName, String blindSize) async {
-    await tui.write('$playerName bets the $blindSize blind\n\n');
+    await tui.write('· $playerName bets the $blindSize blind\n'.dim());
   }
 
   Future<void> showDefaultWinnerFold(String playerName, int amount) async {
-    await tui.write('All other players fold.\n');
-    await tui.write('$playerName wins ${amount}¤.\n\n');
+    await tui.write('· All other players fold.\n');
+    await tui.write('· $playerName wins $amount¤.\n\n');
     await tui.waitForAnyKey();
   }
 
@@ -600,17 +640,17 @@ class Game {
     await tui.write(
       '\n$playerName is the only player eligible for SIDE POT #$sidePotNum.\n',
     );
-    await tui.write('$playerName wins ${amount}¤.\n\n');
+    await tui.write('$playerName wins $amount¤.\n\n');
     await tui.waitForAnyKey();
   }
 
   Future<void> showPhaseChangeAlert(Phase phase, String dealer) async {
     if (phase == Phase.preflop) {
-      await tui.write('Preflop Round: $dealer is the dealer!\n\n');
+      await tui.write('· Preflop Round: $dealer is the dealer.\n'.dim());
     } else {
       final nameCapitalized =
           phase.name[0].toUpperCase() + phase.name.substring(1);
-      await tui.write('Round Change: the $nameCapitalized!\n\n');
+      await tui.write('· Round Change: the $nameCapitalized.\n'.dim());
     }
   }
 
@@ -618,6 +658,7 @@ class Game {
     final sortedPlayers = List<Player>.from(players)
       ..sort((a, b) => (b.isInGame ? 1 : 0).compareTo(a.isInGame ? 1 : 0));
 
+    await tui.write('\n');
     await tui.write(
       '${' ' * 12}    ${'HAND'.padRight(12)}   ${'BET'.padLeft(7)}'
               '   ${'CHIPS'.padLeft(7)}   STATUS'
@@ -755,7 +796,7 @@ class Game {
       );
       final rankStr = winner.bestHandRank?.description ?? '';
       await tui.write(
-        '           $handStr      ${winner.name} wins ${amountPerWinner}¤ with a $rankStr${winner.rankSubtype}!\n',
+        '           $handStr      ${winner.name} wins $amountPerWinner¤ with a $rankStr${winner.rankSubtype}!\n',
       );
       if (winner.kickerCard != null) {
         final kickerStr =
@@ -773,7 +814,9 @@ class Game {
           showFace: true,
           useColor: useColor,
         );
-        await tui.write('           $handStr      ${winner.name} wins ${amountPerWinner}¤\n');
+        await tui.write(
+          '           $handStr      ${winner.name} wins $amountPerWinner¤\n',
+        );
         if (i == handWinners.length - 1) {
           final rankStr = winner.bestHandRank?.description ?? '';
           await tui.write(

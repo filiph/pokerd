@@ -2,6 +2,7 @@ import 'package:args/args.dart';
 import 'package:pokerd/src/ansi.dart';
 import 'package:pokerd/src/game.dart';
 import 'package:pokerd/src/terminal_ui.dart';
+import 'package:tint/tint.dart';
 
 const String version = '0.0.1';
 
@@ -52,31 +53,23 @@ Future<void> main(List<String> arguments) async {
 
     final tui = TerminalUI();
     try {
-      await tui.write('Welcome to pokerd.\n\n');
-
-      int currentSpeed = 300;
-      tui.speed = currentSpeed;
+      await tui.write('Welcome to pokerd.\n');
+      await tui.write('A Texas Hold’em game in your terminal.\n\n'.dim());
 
       bool running = true;
       while (running) {
         await tui.writeInPlace('menu', [
-          ansi('> [P]lay  Speed: [←]$currentSpeed[→]   [Q]uit'),
+          ansi('${'●'.green()}   [S]tart tournament   [Q]uit'),
         ]);
 
         final key = await tui.readKey();
 
-        if (key.isP) {
+        if (key.isS) {
+          await tui.write('\n· Starting tournament...\n'.dim());
           final game = Game(tui);
-          game.speed = currentSpeed;
           await game.play();
-        } else if (key.isLeft) {
-          currentSpeed = (currentSpeed - 10).clamp(10, 1000);
-          tui.speed = currentSpeed;
-        } else if (key.isRight) {
-          currentSpeed = (currentSpeed + 10).clamp(10, 1000);
-          tui.speed = currentSpeed;
         } else if (key.isQ) {
-          await tui.write('Bye.\n');
+          await tui.write('\nGood bye.\n');
           running = false;
         }
       }
