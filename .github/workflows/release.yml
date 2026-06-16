@@ -1,0 +1,33 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        
+      - name: Install dependencies
+        run: dart pub get
+        
+      - name: Build and Release to GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dart run grinder pkg-github-all
+        
+      - name: Update Homebrew Formula
+        env:
+          # A Personal Access Token with 'repo' scope is required
+          # to push to the homebrew-tap repository
+          GITHUB_TOKEN: ${{ secrets.HOMEBREW_GITHUB_TOKEN }}
+        run: dart run grinder pkg-homebrew-update
