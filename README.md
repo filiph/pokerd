@@ -14,9 +14,11 @@ https://github.com/user-attachments/assets/4ce314fa-730d-4a0c-bd38-2e27b2c55b45
 #### Homebrew (macOS / Linux)
 
 ```bash
-brew tap filiph/homebrew-tap
+brew tap filiph/tap
 brew install pokerd
 ```
+
+*(Note: Homebrew may ask you to trust the tap first. If it does, simply run `brew trust filiph/tap` as instructed by the terminal).*
 
 #### Pub.dev (macOS / Linux / Windows)
 

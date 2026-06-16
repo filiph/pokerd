@@ -1,3 +1,7 @@
+## 1.0.7
+
+- Update Homebrew installation instructions in README.
+
 ## 1.0.6
 
 - Update README and documentation.
