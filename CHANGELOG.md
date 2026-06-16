@@ -1,3 +1,7 @@
+## 1.0.6
+
+- Update README and documentation.
+
 ## 1.0.5
 
 - Retry automated pub.dev release.
