@@ -4,7 +4,9 @@ This project is meant as a Texas Hold'em "trainer" for beginner players.
 It's a sandbox for trying out strategies and building an intuition
 for the probabilities involved in poker.
 
-[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/) (This is a personal project.)
+
+https://github.com/user-attachments/assets/4ce314fa-730d-4a0c-bd38-2e27b2c55b45
 
 
 ## Install
