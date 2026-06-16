@@ -429,8 +429,9 @@ class Game {
           await tui.writeInPlace('human_prompt', [
             '',
             ansi(
-              '${'●'.dim()} ${'●'.green()}   Options:   [Q]uit   [H]elp   '
-              'Press [any] other key to go back',
+              '${'●'.dim()} ${'●'.green()}   Options:   '
+              '[Q]uit   [H]and Rankings   [R]ules   '
+              '[Any] other key to go back',
             ),
           ]);
           final key = await tui.readKey();
@@ -440,6 +441,8 @@ class Game {
               throw _QuitException();
             case 'h':
               await showRankingsHelp(tui, useColor: useColor);
+            case 'r':
+              await showRules(tui);
             default:
               // Pass.
               break;
@@ -750,13 +753,13 @@ class Game {
     );
 
     await tui.write(
-      '${'Small Blind'.padLeft(12)}: '
+      '${'Small Blind'.padLeft(12)}  '
       '${(table.bigBlind ~/ 2).toString().padLeft(7).dim()}',
       speedOverride: 1000,
     );
     await tui.write('\n', speedOverride: 1000);
     await tui.write(
-      '${'Big Blind'.padLeft(12)}: '
+      '${'Big Blind'.padLeft(12)}  '
       '${table.bigBlind.toString().padLeft(7).dim()}',
       speedOverride: 1000,
     );
@@ -764,14 +767,14 @@ class Game {
 
     final mainPot = table.pots[0];
     await tui.write(
-      '${'POT'.padLeft(12)}: '
+      '${'POT'.padLeft(12)}  '
       '${mainPot.amount.toString().padLeft(7)}\n',
       speedOverride: 1000,
     );
     for (var i = 1; i < table.pots.length; i++) {
       final sidePot = table.pots[i];
       await tui.write(
-        '${'SIDE POT #$i'.padLeft(12)}: '
+        '${'SIDE POT #$i'.padLeft(12)}  '
         '${sidePot.amount.toString().padLeft(7)}\n',
         speedOverride: 1000,
       );
@@ -877,7 +880,6 @@ class Game {
     await tui.write('             GAME OVER            \n');
     await tui.write('==================================\n\n\n\n');
   }
-
 }
 
 class _QuitException implements Exception {
