@@ -42,12 +42,14 @@ jobs:
         include:
           - os: ubuntu-latest
             output: pokerd-linux-x64
+          - os: ubuntu-24.04-arm
+            output: pokerd-linux-arm64
           - os: macos-latest
             output: pokerd-macos-arm64
-          - os: macos-13
-            output: pokerd-macos-x64
           - os: windows-latest
             output: pokerd-windows-x64.exe
+          - os: windows-11-arm
+            output: pokerd-windows-arm64.exe
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
