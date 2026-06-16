@@ -1,3 +1,7 @@
+## 1.0.12
+
+- Fix Homebrew tag resolution for source tarball.
+
 ## 1.0.11
 
 - Switch GitHub Releases to true single-file native executables.
