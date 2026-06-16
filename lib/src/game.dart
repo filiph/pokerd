@@ -770,7 +770,6 @@ class Game {
   ) async {
     await showTable(isShowdown: true);
     await showPotWinners(handWinners, showdownPlayers, potNum, amountPerWinner);
-    await tui.waitForAnyKey();
   }
 
   Future<void> showPotWinners(
@@ -782,9 +781,9 @@ class Game {
     var potType = 'the pot';
     if (potNum > 0) {
       potType = 'SIDE POT #$potNum';
-      final playersStr = showdownPlayers.map((p) => p.name).join('   ');
+      final playersStr = showdownPlayers.map((p) => p.name).join(', ');
       await tui.write(
-        '           Players eligible for SIDE POT #$potNum:      $playersStr\n\n',
+        '· Players eligible for SIDE POT #$potNum: $playersStr\n',
       );
     }
     if (handWinners.length == 1) {
@@ -796,16 +795,19 @@ class Game {
       );
       final rankStr = winner.bestHandRank?.description ?? '';
       await tui.write(
-        '           $handStr      ${winner.name} wins $amountPerWinner¤ with a $rankStr${winner.rankSubtype}!\n',
+        '· ${winner.name} wins $amountPerWinner¤ '
+        'with a $rankStr${winner.rankSubtype}!\n',
       );
+      await tui.write('  $handStr\n');
       if (winner.kickerCard != null) {
-        final kickerStr =
-            'Kicker card was the '
-            '${TerminalUI.formatCard(winner.kickerCard!, showFace: true, useColor: useColor)}';
-        await tui.write('${kickerStr.padLeft(75)}\n\n');
-      } else {
-        await tui.write('\n');
+        final cardStr = TerminalUI.formatCard(
+          winner.kickerCard!,
+          showFace: true,
+          useColor: useColor,
+        );
+        await tui.write('  Kicker card was the $cardStr.\n');
       }
+      await tui.write('\n');
     } else {
       for (var i = 0; i < handWinners.length; i++) {
         final winner = handWinners[i];
@@ -814,18 +816,17 @@ class Game {
           showFace: true,
           useColor: useColor,
         );
-        await tui.write(
-          '           $handStr      ${winner.name} wins $amountPerWinner¤\n',
-        );
+        await tui.write('· ${winner.name} wins $amountPerWinner¤\n');
+        await tui.write('  $handStr\n');
         if (i == handWinners.length - 1) {
           final rankStr = winner.bestHandRank?.description ?? '';
           await tui.write(
-            '\n\n           Split $potType with a $rankStr${winner.rankSubtype}!\n',
+            '· Split $potType with a $rankStr${winner.rankSubtype}!\n',
           );
           if (winner.kickerCard != null) {
-            final kickerStr =
-                'Kicker card was the  ${winner.kickerCard!.rank.symbol}';
-            await tui.write('${kickerStr.padLeft(33)}\n\n');
+            await tui.write(
+              '  Kicker card was the ${winner.kickerCard!.rank.symbol}\n',
+            );
           }
         }
       }
