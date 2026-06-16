@@ -1,3 +1,7 @@
+## 1.0.4
+
+- Test fully automated release pipeline (GitHub, pub.dev, Homebrew).
+
 ## 1.0.3
 
 - Fix Homebrew formula push authentication.
