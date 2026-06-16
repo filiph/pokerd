@@ -23,7 +23,11 @@ jobs:
       - name: Build and Release to GitHub
         env:
           GITHUB_BEARER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: dart run grinder pkg-github-all
+        run: |
+          dart run grinder pkg-github-release
+          dart run grinder pkg-github-linux
+          dart run grinder pkg-github-macos
+          dart run grinder pkg-github-windows
         
       - name: Update Homebrew Formula
         env:

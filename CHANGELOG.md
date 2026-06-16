@@ -1,3 +1,7 @@
+## 1.0.2
+
+- Restrict build targets to macOS, Linux, and Windows.
+
 ## 1.0.1
 
 - Fix release pipeline.
