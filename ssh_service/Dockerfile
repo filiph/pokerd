@@ -34,8 +34,8 @@ COPY ssh_service/sshd_config /etc/ssh/sshd_config
 COPY ssh_service/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Create the 'play' user with its shell set to the game executable
-RUN useradd -m -d /home/play -s /usr/local/bin/pokerd play && \
+# Create the 'play' user with its shell set to /bin/sh (sshd will use it to invoke ForceCommand)
+RUN useradd -m -d /home/play -s /bin/sh play && \
     passwd -d play
 
 # Ensure host keys folder and sshd run directory exist
