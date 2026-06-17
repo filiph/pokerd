@@ -1,6 +1,11 @@
 #!/bin/sh
 # Wrapper to enforce player connection limit
 
+# Load environment variables exported at container startup
+if [ -f /etc/pokerd_env ]; then
+    . /etc/pokerd_env
+fi
+
 # Default limit of active players is 100
 MAX_PLAYERS=${MAX_PLAYERS:-100}
 

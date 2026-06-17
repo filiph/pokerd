@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# Save container environment variables to a file readable by the play user
+echo "MAX_PLAYERS=\"$MAX_PLAYERS\"" > /etc/pokerd_env
+chmod 644 /etc/pokerd_env
+
 # Increase file descriptor limits for SSH connections to handle usage spikes
 ulimit -n 65535 || true
 
