@@ -1,13 +1,13 @@
 import 'dart:math';
 
+import 'package:pokerd/src/chips_amount.dart';
+
 import 'betting_move.dart';
 import 'card.dart';
 import 'hand_rank.dart';
 import 'player.dart';
 
-import 'package:pokerd/src/chips_amount.dart';
-
-enum ComputerPlayingStyle { grandma, leeroy, suitcase, michelle }
+enum ComputerPlayingStyle { grandma, leeroy, mrCase, michelle }
 
 class ComputerPlayer extends Player {
   final ComputerPlayingStyle playingStyle;
@@ -26,15 +26,27 @@ class ComputerPlayer extends Player {
   }) : _random = random ?? Random();
 
   static List<ComputerPlayer> createDefaultPlayers() => [
-        ComputerPlayer('Grandma', ComputerPlayingStyle.grandma,
-            monteCarloIterations: 300),
-        ComputerPlayer('Kyle', ComputerPlayingStyle.leeroy,
-            monteCarloIterations: 100),
-        ComputerPlayer('Mr. Suitcase', ComputerPlayingStyle.suitcase,
-            monteCarloIterations: 500),
-        ComputerPlayer('Michelle', ComputerPlayingStyle.michelle,
-            monteCarloIterations: 400),
-      ];
+    ComputerPlayer(
+      'Grandma',
+      ComputerPlayingStyle.grandma,
+      monteCarloIterations: 300,
+    ),
+    ComputerPlayer(
+      'Kyle',
+      ComputerPlayingStyle.leeroy,
+      monteCarloIterations: 100,
+    ),
+    ComputerPlayer(
+      'Mr. Case',
+      ComputerPlayingStyle.mrCase,
+      monteCarloIterations: 500,
+    ),
+    ComputerPlayer(
+      'Michelle',
+      ComputerPlayingStyle.michelle,
+      monteCarloIterations: 400,
+    ),
+  ];
 
   Future<BettingMove> chooseNextMove(
     ChipsAmount tableRaiseAmount,
@@ -72,7 +84,7 @@ class ComputerPlayer extends Player {
         numTimesTableRaised,
         tableLastBet,
       ),
-      ComputerPlayingStyle.suitcase => _suitcasePlay(
+      ComputerPlayingStyle.mrCase => _suitcasePlay(
         winProb,
         tableRaiseAmount,
         numTimesTableRaised,
@@ -213,7 +225,7 @@ class ComputerPlayer extends Player {
       // Simple heuristic: if avg bet is high relative to pot, they are confident
       final avgOtherBet =
           otherBets.map((b) => b.value).reduce((a, b) => a + b) /
-              otherBets.length;
+          otherBets.length;
       othersConfidence = (avgOtherBet / (potSize.value + 1)).clamp(0.0, 1.0);
     }
 
