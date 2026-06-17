@@ -20,17 +20,20 @@ RUN dart compile exe bin/pokerd.dart -o bin/pokerd
 # ==========================================
 FROM debian:stable-slim
 
-# Install OpenSSH server and cleanup packages to keep image small
+# Install OpenSSH server, procps (for pgrep), and cleanup packages to keep image small
 RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-server \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the compiled native game executable from the builder stage
 COPY --from=builder /app/bin/pokerd /usr/local/bin/pokerd
 RUN chmod +x /usr/local/bin/pokerd
 
-# Copy the SSH daemon config and entrypoint script
+# Copy the SSH daemon config, wrapper, and entrypoint script
 COPY ssh_service/sshd_config /etc/ssh/sshd_config
+COPY ssh_service/max_players_wrapper.sh /usr/local/bin/max_players_wrapper.sh
+RUN chmod +x /usr/local/bin/max_players_wrapper.sh
 COPY ssh_service/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

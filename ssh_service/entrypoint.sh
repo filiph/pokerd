@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Increase file descriptor limits for SSH connections to handle usage spikes
+ulimit -n 65535 || true
+
 # Ensure host keys directory exists
 mkdir -p /etc/ssh/host_keys
 

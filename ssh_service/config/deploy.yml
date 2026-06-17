@@ -31,3 +31,4 @@ accessories:
     env:
       clear:
         TERM: xterm-256color
+        MAX_PLAYERS: 250
