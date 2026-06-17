@@ -1,0 +1,33 @@
+# Custom sshd configuration for pokerd
+Port 22
+ListenAddress 0.0.0.0
+Protocol 2
+
+# HostKeys location in the persistent volume
+HostKey /etc/ssh/host_keys/ssh_host_rsa_key
+HostKey /etc/ssh/host_keys/ssh_host_ecdsa_key
+HostKey /etc/ssh/host_keys/ssh_host_ed25519_key
+
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication yes
+PermitEmptyPasswords yes
+UsePAM no
+
+# Logging
+SyslogFacility AUTH
+LogLevel INFO
+
+# Security restrictions
+AllowTcpForwarding no
+X11Forwarding no
+AllowAgentForwarding no
+GatewayPorts no
+PrintMotd no
+
+# Match block to restrict 'play' user and force the game command
+Match User play
+    ForceCommand /usr/local/bin/pokerd
+    AllowTcpForwarding no
+    AllowAgentForwarding no
+    X11Forwarding no

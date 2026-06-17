@@ -1,0 +1,33 @@
+service: pokerd
+image: filiph/pokerd
+
+servers:
+  web:
+    hosts:
+      - 194.182.85.8
+    proxy: false
+
+registry:
+  server: ghcr.io
+  username: filiph
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+ssh:
+  user: deploy
+  port: 47342
+
+builder:
+  arch: amd64
+  dockerfile: ssh_service/Dockerfile
+
+accessories:
+  game:
+    image: ghcr.io/filiph/pokerd:latest
+    host: 194.182.85.8
+    port: "0.0.0.0:22:22"
+    volumes:
+      - /opt/pokerd/ssh_host_keys:/etc/ssh/host_keys
+    env:
+      clear:
+        TERM: xterm-256color
