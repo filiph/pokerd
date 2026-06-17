@@ -34,7 +34,11 @@ void main() {
         const ChipsAmount(200),
         community: [],
         potSize: const ChipsAmount(300),
-        otherBets: [const ChipsAmount(200)],
+        otherBets: [
+          const ChipsAmount(200),
+          const ChipsAmount(200),
+          const ChipsAmount(200),
+        ],
       );
       expect(move, equals(BettingMove.folded));
     });
