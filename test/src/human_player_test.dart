@@ -59,7 +59,9 @@ void main() {
     });
 
     test('cannot increase bet beyond player max chips', () async {
-      player.chips = const ChipsAmount(250); // max total chips is chips + bet = 250
+      player.chips = const ChipsAmount(
+        250,
+      ); // max total chips is chips + bet = 250
       player.bet = const ChipsAmount(0);
       game.table.raiseAmount = const ChipsAmount(200);
 

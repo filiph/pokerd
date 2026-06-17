@@ -12,14 +12,18 @@ import 'package:pokerd/src/human_player.dart';
 
 void main(List<String> args) async {
   final parser = ArgParser()
-    ..addOption('tournaments',
-        abbr: 't',
-        help: 'How many tournaments should be played',
-        defaultsTo: '1')
-    ..addOption('max-rounds',
-        abbr: 'r',
-        help: 'How many rounds per tournament should be played',
-        defaultsTo: '100')
+    ..addOption(
+      'tournaments',
+      abbr: 't',
+      help: 'How many tournaments should be played',
+      defaultsTo: '1',
+    )
+    ..addOption(
+      'max-rounds',
+      abbr: 'r',
+      help: 'How many rounds per tournament should be played',
+      defaultsTo: '100',
+    )
     ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help');
 
   final results = parser.parse(args);
@@ -40,10 +44,7 @@ void main(List<String> args) async {
   }
 
   for (final entry in stats.entries) {
-    print(jsonEncode({
-      'statsFor': entry.key,
-      ...entry.value.toJson(),
-    }));
+    print(jsonEncode({'statsFor': entry.key, ...entry.value.toJson()}));
   }
 }
 
@@ -100,7 +101,7 @@ class PlayerStats {
     final avgFoldPhase = totalFolds == 0
         ? 0.0
         : (foldsPreflop * 0 + foldsFlop * 1 + foldsTurn * 2 + foldsRiver * 3) /
-            totalFolds;
+              totalFolds;
 
     return {
       'totalGames': totalGames,
@@ -114,17 +115,22 @@ class PlayerStats {
         'river': foldsRiver,
         'total': totalFolds,
       },
-      'foldsNormalized':
-          totalGamesActive == 0 ? 0.0 : totalFolds / totalGamesActive,
+      'foldsNormalized': totalGamesActive == 0
+          ? 0.0
+          : totalFolds / totalGamesActive,
       'avgFoldPhase': avgFoldPhase,
-      'avgWinProbAtFold':
-          totalFolds == 0 ? 0.0 : totalWinProbAtFold / totalFolds,
-      'avgPotOddsAtFold':
-          totalFolds == 0 ? 0.0 : totalPotOddsAtFold / totalFolds,
-      'avgWinProbAtAction':
-          totalActions == 0 ? 0.0 : totalWinProbAtAction / totalActions,
-      'avgPotOddsAtAction':
-          totalActions == 0 ? 0.0 : totalPotOddsAtAction / totalActions,
+      'avgWinProbAtFold': totalFolds == 0
+          ? 0.0
+          : totalWinProbAtFold / totalFolds,
+      'avgPotOddsAtFold': totalFolds == 0
+          ? 0.0
+          : totalPotOddsAtFold / totalFolds,
+      'avgWinProbAtAction': totalActions == 0
+          ? 0.0
+          : totalWinProbAtAction / totalActions,
+      'avgPotOddsAtAction': totalActions == 0
+          ? 0.0
+          : totalPotOddsAtAction / totalActions,
       'beats': beats,
     };
   }
@@ -143,9 +149,10 @@ class NullStringSink implements StringSink {
 
 class SilentTUI extends TerminalUI {
   SilentTUI()
-      : super(
-            inputStream: const Stream<List<int>>.empty(),
-            outputSink: NullStringSink());
+    : super(
+        inputStream: const Stream<List<int>>.empty(),
+        outputSink: NullStringSink(),
+      );
 
   @override
   Future<InputChar> readKey() async {
@@ -154,7 +161,9 @@ class SilentTUI extends TerminalUI {
 }
 
 Future<void> runTournament(
-    int maxRounds, Map<String, PlayerStats> allStats) async {
+  int maxRounds,
+  Map<String, PlayerStats> allStats,
+) async {
   final eventController = StreamController<GameEvent>();
 
   final tui = SilentTUI();
@@ -219,7 +228,10 @@ Future<void> runTournament(
 }
 
 void _recordBeats(
-    String? winner, List<String> losers, Map<String, PlayerStats> allStats) {
+  String? winner,
+  List<String> losers,
+  Map<String, PlayerStats> allStats,
+) {
   if (winner == null || losers.isEmpty) return;
   for (final loser in losers) {
     allStats[winner]?.recordBeat(loser);

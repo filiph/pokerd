@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:pokerd/src/betting_move.dart';
 import 'package:pokerd/src/card.dart';
-import 'package:pokerd/src/computer_player.dart';
 import 'package:pokerd/src/chips_amount.dart';
+import 'package:pokerd/src/computer_player.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -91,7 +91,7 @@ void main() {
     test('Mr. Suitcase calls when pot odds are favorable', () async {
       final player = ComputerPlayer(
         'Mr. Suitcase',
-        ComputerPlayingStyle.suitcase,
+        ComputerPlayingStyle.mrCase,
         random: random,
         monteCarloIterations: 1000,
       );
@@ -123,7 +123,7 @@ void main() {
     test('Mr. Suitcase folds when pot odds are unfavorable', () async {
       final player = ComputerPlayer(
         'Mr. Suitcase',
-        ComputerPlayingStyle.suitcase,
+        ComputerPlayingStyle.mrCase,
         random: random,
         monteCarloIterations: 1000,
       );

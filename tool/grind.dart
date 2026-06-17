@@ -6,7 +6,7 @@ void main(List<String> args) {
   pkg.githubRepo.value = "filiph/pokerd";
   pkg.homebrewRepo.value = "filiph/homebrew-tap";
   pkg.homebrewTag.value = "v${pkg.version}";
-  
+
   pkg.addAllTasks();
   grind(args);
 }

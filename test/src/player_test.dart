@@ -92,7 +92,10 @@ void main() {
       player.chips = const ChipsAmount(5);
       player.bet = const ChipsAmount(90);
 
-      expect(() => player.matchBet(const ChipsAmount(100)), throwsA(isA<ArgumentError>()));
+      expect(
+        () => player.matchBet(const ChipsAmount(100)),
+        throwsA(isA<ArgumentError>()),
+      );
     });
 
     test(
@@ -102,7 +105,10 @@ void main() {
         player.chips = const ChipsAmount(100000);
         player.bet = const ChipsAmount(500);
 
-        expect(() => player.matchBet(const ChipsAmount(250)), throwsA(isA<ArgumentError>()));
+        expect(
+          () => player.matchBet(const ChipsAmount(250)),
+          throwsA(isA<ArgumentError>()),
+        );
       },
     );
   });

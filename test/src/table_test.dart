@@ -97,7 +97,8 @@ void main() {
 
   group('TestTableBettingsAndBlinds', () {
     test('test_takeSmallBlind_with_sufficient_chips', () {
-      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(1000);
+      final player = MockConcretePlayerClass('Alice')
+        ..chips = const ChipsAmount(1000);
       final table = Table()..bigBlind = const ChipsAmount(200);
       final result = table.takeSmallBlind(player);
       expect(result, isFalse);
@@ -107,7 +108,8 @@ void main() {
     });
 
     test('test_takeSmallBlind_forcing_all_in', () {
-      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(50);
+      final player = MockConcretePlayerClass('Alice')
+        ..chips = const ChipsAmount(50);
       final table = Table()..bigBlind = const ChipsAmount(200);
       final result = table.takeSmallBlind(player);
       expect(result, isTrue);
@@ -118,7 +120,8 @@ void main() {
     });
 
     test('test_takeBet_checks_and_calls', () {
-      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(1000);
+      final player = MockConcretePlayerClass('Alice')
+        ..chips = const ChipsAmount(1000);
       final table = Table()..lastBet = const ChipsAmount(150);
       table.takeBet(player, BettingMove.called);
       expect(player.bet, equals(const ChipsAmount(150)));
@@ -144,7 +147,8 @@ void main() {
     });
 
     test('test_takeBet_normal_raise_updates_minRaiseIncrement', () {
-      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(1000);
+      final player = MockConcretePlayerClass('Alice')
+        ..chips = const ChipsAmount(1000);
       final table = Table()
         ..bigBlind = const ChipsAmount(200)
         ..minRaiseIncrement = const ChipsAmount(200)
@@ -161,7 +165,8 @@ void main() {
     });
 
     test('test_takeBet_allIn_full_raise', () {
-      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(500);
+      final player = MockConcretePlayerClass('Alice')
+        ..chips = const ChipsAmount(500);
       final table = Table()
         ..lastBet = const ChipsAmount(100)
         ..minRaiseIncrement = const ChipsAmount(200);
@@ -178,7 +183,8 @@ void main() {
     });
 
     test('test_takeBet_allIn_partial_raise', () {
-      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(250);
+      final player = MockConcretePlayerClass('Alice')
+        ..chips = const ChipsAmount(250);
       final table = Table()
         ..lastBet = const ChipsAmount(200)
         ..minRaiseIncrement = const ChipsAmount(200);
@@ -195,7 +201,8 @@ void main() {
     });
 
     test('test_takeBet_call_more_than_chips_converts_to_allIn', () {
-      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(500);
+      final player = MockConcretePlayerClass('Alice')
+        ..chips = const ChipsAmount(500);
       final table = Table()..lastBet = const ChipsAmount(1000);
       table.takeBet(player, BettingMove.called);
       expect(player.isAllIn, isTrue);
@@ -210,7 +217,8 @@ void main() {
     });
 
     test('test_takeBet_raise_more_than_chips_converts_to_allIn', () {
-      final player = MockConcretePlayerClass('Alice')..chips = const ChipsAmount(500);
+      final player = MockConcretePlayerClass('Alice')
+        ..chips = const ChipsAmount(500);
       final table = Table()
         ..lastBet = const ChipsAmount(100)
         ..raiseAmount = const ChipsAmount(1000);

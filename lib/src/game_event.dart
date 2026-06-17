@@ -18,18 +18,17 @@ class GameEvent {
     required ChipsAmount lastBet,
     required ChipsAmount callAmount,
     required ChipsAmount bet,
-  }) =>
-      GameEvent._('action', {
-        'player': player,
-        'move': move.name,
-        'playerCards': _formatCards(playerCards),
-        'communityCards': _formatCards(communityCards),
-        'winProb': winProb,
-        'pot': pot.value,
-        'lastBet': lastBet.value,
-        'callAmount': callAmount.value,
-        'bet': bet.value,
-      });
+  }) => GameEvent._('action', {
+    'player': player,
+    'move': move.name,
+    'playerCards': _formatCards(playerCards),
+    'communityCards': _formatCards(communityCards),
+    'winProb': winProb,
+    'pot': pot.value,
+    'lastBet': lastBet.value,
+    'callAmount': callAmount.value,
+    'bet': bet.value,
+  });
 
   factory GameEvent.fold({
     required String player,
@@ -40,17 +39,16 @@ class GameEvent {
     required ChipsAmount lastBet,
     required ChipsAmount callAmount,
     required ChipsAmount bet,
-  }) =>
-      GameEvent._('fold', {
-        'player': player,
-        'playerCards': _formatCards(playerCards),
-        'communityCards': _formatCards(communityCards),
-        'winProb': winProb,
-        'pot': pot.value,
-        'lastBet': lastBet.value,
-        'callAmount': callAmount.value,
-        'bet': bet.value,
-      });
+  }) => GameEvent._('fold', {
+    'player': player,
+    'playerCards': _formatCards(playerCards),
+    'communityCards': _formatCards(communityCards),
+    'winProb': winProb,
+    'pot': pot.value,
+    'lastBet': lastBet.value,
+    'callAmount': callAmount.value,
+    'bet': bet.value,
+  });
 
   factory GameEvent.win({
     required String player,
@@ -59,15 +57,14 @@ class GameEvent {
     required String hand,
     required String handRank,
     required ChipsAmount pot,
-  }) =>
-      GameEvent._('win', {
-        'player': player,
-        'playerCards': _formatCards(playerCards),
-        'communityCards': _formatCards(communityCards),
-        'hand': hand,
-        'handRank': handRank,
-        'pot': pot.value,
-      });
+  }) => GameEvent._('win', {
+    'player': player,
+    'playerCards': _formatCards(playerCards),
+    'communityCards': _formatCards(communityCards),
+    'hand': hand,
+    'handRank': handRank,
+    'pot': pot.value,
+  });
 
   factory GameEvent.lose({
     required String player,
@@ -75,29 +72,24 @@ class GameEvent {
     required List<Card> communityCards,
     required String hand,
     required String handRank,
-  }) =>
-      GameEvent._('lose', {
-        'player': player,
-        'playerCards': _formatCards(playerCards),
-        'communityCards': _formatCards(communityCards),
-        'hand': hand,
-        'handRank': handRank,
-      });
+  }) => GameEvent._('lose', {
+    'player': player,
+    'playerCards': _formatCards(playerCards),
+    'communityCards': _formatCards(communityCards),
+    'hand': hand,
+    'handRank': handRank,
+  });
 
   factory GameEvent.roundStart({
     required int roundNumber,
     required List<String> players,
-  }) =>
-      GameEvent._('roundStart', {
-        'roundNumber': roundNumber,
-        'players': players,
-      });
+  }) => GameEvent._('roundStart', {
+    'roundNumber': roundNumber,
+    'players': players,
+  });
 
   static String _formatCards(List<Card> cards) =>
       cards.map((c) => c.pokerNotation).join(' ');
 
-  Map<String, dynamic> toJson() => {
-        'event': event,
-        ...data,
-      };
+  Map<String, dynamic> toJson() => {'event': event, ...data};
 }

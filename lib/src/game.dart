@@ -359,10 +359,9 @@ class Game {
             player: bettingPlayer.name,
             playerCards: List.from(bettingPlayer.hand),
             communityCards: List.from(table.community),
-            winProb:
-                (bettingPlayer is ComputerPlayer)
-                    ? (bettingPlayer as ComputerPlayer).lastWinProb
-                    : 0.0,
+            winProb: (bettingPlayer is ComputerPlayer)
+                ? (bettingPlayer as ComputerPlayer).lastWinProb
+                : 0.0,
             pot: potSize,
             lastBet: oldLastBet,
             callAmount: callAmount,
@@ -376,10 +375,9 @@ class Game {
             move: move,
             playerCards: List.from(bettingPlayer.hand),
             communityCards: List.from(table.community),
-            winProb:
-                (bettingPlayer is ComputerPlayer)
-                    ? (bettingPlayer as ComputerPlayer).lastWinProb
-                    : 0.0,
+            winProb: (bettingPlayer is ComputerPlayer)
+                ? (bettingPlayer as ComputerPlayer).lastWinProb
+                : 0.0,
             pot: potSize,
             lastBet: oldLastBet,
             callAmount: callAmount,
