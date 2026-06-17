@@ -10,6 +10,30 @@ This is a personal project.
 <img width="800" height="525" alt="pokerd in motion, a screencast gif" src="https://github.com/user-attachments/assets/3789fa19-fef2-4996-8ee5-e6cdb23485a9" />
 
 
+## Play Instantly via SSH (no install)
+
+You can play the game instantly in your terminal by connecting to the live server:
+
+```bash
+ssh play@poker.filiph.net
+```
+
+### Note on First Connection:
+
+When you connect for the first time,
+`ssh` will prompt you to verify the server's public key fingerprint:
+
+```text
+The authenticity of host 'poker.filiph.net (....)' can't be established.
+...
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+```
+
+To proceed, you *must type the full word `yes`*.
+Simply hitting *Enter* without typing `yes` may default to `no` on some systems,
+which leads to a `Host key verification failed` error.)*
+
+
 ## Install
 
 #### Homebrew (macOS / Linux)
@@ -53,23 +77,3 @@ Extract the archive and run the binary.
 ```bash
 pokerd
 ```
-
-## Play Instantly via SSH (No Install)
-
-You can play the game instantly in your terminal by connecting to our live server:
-
-```bash
-ssh play@poker.filiph.net
-```
-
-### Note on First Connection:
-When you connect for the first time, your SSH client will prompt you to verify the server's public key fingerprint:
-```text
-The authenticity of host 'poker.filiph.net (194.182.85.8)' can't be established.
-ED25519 key fingerprint is SHA256:Ct0F8eBtSyJJeMmYaVPEpQZxVwM8fTRL7vZ3q45fcz0.
-This key is not known by any other names.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? 
-```
-To proceed, you **must type the full word `yes`** and press **Enter**. 
-
-*(Simply hitting **Enter** without typing `yes` or typing just `y` can default to `no` on some systems and abort with a `Host key verification failed` error.)*
