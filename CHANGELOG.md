@@ -1,3 +1,13 @@
+## 1.0.15
+
+- Add SSH service support allowing users to play the poker game over SSH.
+- Gracefully limit maximum concurrent players using the `MAX_PLAYERS` environment variable.
+- Configure `play` user login shell to `/bin/sh` to avoid ForceCommand `-c` option issues.
+- Automatically reboot the game on deploy and fix environment variable propagation.
+- Add redirect server supporting redirection to poker.filiph.net.
+- Rename NPC opponent "Mr Suitcase" to "Mr Case".
+- Add release process documentation.
+
 ## 1.0.14
 
 - Balance NPC opponents and add more stats.

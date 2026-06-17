@@ -1,7 +1,7 @@
 name: pokerd
 description: >
   A command line Texas Hold'em implementation, a "trainer" for beginners.
-version: 1.0.14
+version: 1.0.15
 homepage: https://github.com/filiph/pokerd
 repository: https://github.com/filiph/pokerd
 
