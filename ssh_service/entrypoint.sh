@@ -1,6 +1,11 @@
 #!/bin/sh
 set -e
 
+if [ "$MODE" = "redirect" ]; then
+    echo "Starting HTTP Redirect server..."
+    exec /usr/local/bin/redirect
+fi
+
 # Save container environment variables to a file readable by the play user
 echo "MAX_PLAYERS=\"$MAX_PLAYERS\"" > /etc/pokerd_env
 chmod 644 /etc/pokerd_env

@@ -12,8 +12,9 @@ RUN dart pub get
 # Copy the remaining source files
 COPY . .
 
-# Compile the poker game binary to a native executable
-RUN dart compile exe bin/pokerd.dart -o bin/pokerd
+# Compile the poker game binary and redirect server to native executables
+RUN dart compile exe bin/pokerd.dart -o bin/pokerd && \
+    dart compile exe bin/redirect.dart -o bin/redirect
 
 # ==========================================
 # Stage 2: Run the game via OpenSSH
@@ -26,9 +27,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the compiled native game executable from the builder stage
+# Copy the compiled native game and redirect executables from the builder stage
 COPY --from=builder /app/bin/pokerd /usr/local/bin/pokerd
-RUN chmod +x /usr/local/bin/pokerd
+COPY --from=builder /app/bin/redirect /usr/local/bin/redirect
+RUN chmod +x /usr/local/bin/pokerd /usr/local/bin/redirect
 
 # Copy the SSH daemon config, wrapper, and entrypoint script
 COPY ssh_service/sshd_config /etc/ssh/sshd_config
@@ -47,6 +49,6 @@ RUN mkdir -p /etc/ssh/host_keys /var/run/sshd
 # Default environment to ensure 256-color support in terminal UI
 ENV TERM=xterm-256color
 
-EXPOSE 22
+EXPOSE 22 80
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

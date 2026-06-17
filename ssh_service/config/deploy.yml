@@ -5,7 +5,18 @@ servers:
   web:
     hosts:
       - 194.182.85.8
-    proxy: false
+
+proxy:
+  ssl: true
+  hosts:
+    - poker.filiph.net
+  healthcheck:
+    path: /
+
+env:
+  clear:
+    MODE: redirect
+    REDIRECT_URL: https://filiph.net
 
 registry:
   server: ghcr.io
@@ -32,3 +43,4 @@ accessories:
       clear:
         TERM: xterm-256color
         MAX_PLAYERS: 250
+        MODE: ssh
