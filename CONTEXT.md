@@ -25,6 +25,9 @@ _Avoid_: Hand category, Rank string
 **Kicker**:
 An extra card that does not directly form part of a hand combination but is used as a tie-breaker when players have hands of the same **HandRank** and score.
 
+**Release**:
+The process of publishing a new version of the application (also known as a version bump). The exact steps and automated pipeline details are documented in `docs/RELEASE.md`.
+
 **Showdown**:
 The final stage of a hand where active players reveal their cards and compare them using **HandRank** and **Kicker**s to determine the winner(s).
 
