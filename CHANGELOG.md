@@ -1,3 +1,7 @@
+## 1.0.14
+
+- Balance NPC opponents and add more stats.
+
 ## 1.0.13
 
 - Add Linux ARM64 and Windows ARM64 build targets, remove macOS Intel.
