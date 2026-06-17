@@ -15,6 +15,8 @@ class GameEvent {
     required List<Card> communityCards,
     required double winProb,
     required ChipsAmount pot,
+    required ChipsAmount lastBet,
+    required ChipsAmount callAmount,
     required ChipsAmount bet,
   }) =>
       GameEvent._('action', {
@@ -24,6 +26,8 @@ class GameEvent {
         'communityCards': _formatCards(communityCards),
         'winProb': winProb,
         'pot': pot.value,
+        'lastBet': lastBet.value,
+        'callAmount': callAmount.value,
         'bet': bet.value,
       });
 
@@ -32,12 +36,20 @@ class GameEvent {
     required List<Card> playerCards,
     required List<Card> communityCards,
     required double winProb,
+    required ChipsAmount pot,
+    required ChipsAmount lastBet,
+    required ChipsAmount callAmount,
+    required ChipsAmount bet,
   }) =>
       GameEvent._('fold', {
         'player': player,
         'playerCards': _formatCards(playerCards),
         'communityCards': _formatCards(communityCards),
         'winProb': winProb,
+        'pot': pot.value,
+        'lastBet': lastBet.value,
+        'callAmount': callAmount.value,
+        'bet': bet.value,
       });
 
   factory GameEvent.win({

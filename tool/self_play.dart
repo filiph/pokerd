@@ -52,15 +52,82 @@ class PlayerStats {
   int totalGamesActive = 0;
   int wins = 0;
 
+  int foldsPreflop = 0;
+  int foldsFlop = 0;
+  int foldsTurn = 0;
+  int foldsRiver = 0;
+
+  double totalWinProbAtFold = 0;
+  double totalWinProbAtAction = 0;
+  double totalPotOddsAtFold = 0;
+  double totalPotOddsAtAction = 0;
+
+  int totalActions = 0;
+
+  final Map<String, int> beats = {};
+
   void recordGame() => totalGames++;
   void recordActive() => totalGamesActive++;
   void recordWin() => wins++;
 
-  Map<String, dynamic> toJson() => {
-        'totalGames': totalGames,
-        'totalGamesActive': totalGamesActive,
-        'wins': wins,
-      };
+  void recordFold(String phase, double winProb, double potOdds) {
+    switch (phase) {
+      case 'preflop':
+        foldsPreflop++;
+      case 'flop':
+        foldsFlop++;
+      case 'turn':
+        foldsTurn++;
+      case 'river':
+        foldsRiver++;
+    }
+    totalWinProbAtFold += winProb;
+    totalPotOddsAtFold += potOdds;
+  }
+
+  void recordAction(double winProb, double potOdds) {
+    totalActions++;
+    totalWinProbAtAction += winProb;
+    totalPotOddsAtAction += potOdds;
+  }
+
+  void recordBeat(String opponent) {
+    beats[opponent] = (beats[opponent] ?? 0) + 1;
+  }
+
+  Map<String, dynamic> toJson() {
+    final totalFolds = foldsPreflop + foldsFlop + foldsTurn + foldsRiver;
+    final avgFoldPhase = totalFolds == 0
+        ? 0.0
+        : (foldsPreflop * 0 + foldsFlop * 1 + foldsTurn * 2 + foldsRiver * 3) /
+            totalFolds;
+
+    return {
+      'totalGames': totalGames,
+      'totalGamesActive': totalGamesActive,
+      'wins': wins,
+      'winRate': totalGamesActive == 0 ? 0.0 : wins / totalGamesActive,
+      'folds': {
+        'preflop': foldsPreflop,
+        'flop': foldsFlop,
+        'turn': foldsTurn,
+        'river': foldsRiver,
+        'total': totalFolds,
+      },
+      'foldsNormalized':
+          totalGamesActive == 0 ? 0.0 : totalFolds / totalGamesActive,
+      'avgFoldPhase': avgFoldPhase,
+      'avgWinProbAtFold':
+          totalFolds == 0 ? 0.0 : totalWinProbAtFold / totalFolds,
+      'avgPotOddsAtFold':
+          totalFolds == 0 ? 0.0 : totalPotOddsAtFold / totalFolds,
+      'avgWinProbAtAction':
+          totalActions == 0 ? 0.0 : totalWinProbAtAction / totalActions,
+      'avgPotOddsAtAction':
+          totalActions == 0 ? 0.0 : totalPotOddsAtAction / totalActions,
+      'beats': beats,
+    };
+  }
 }
 
 class NullStringSink implements StringSink {
@@ -99,10 +166,16 @@ Future<void> runTournament(
     allStats.putIfAbsent(player.name, () => PlayerStats());
   }
 
+  String? currentWinner;
+  final roundLosers = <String>[];
+
   final sub = eventController.stream.listen((event) {
     print(jsonEncode(event.toJson()));
 
     if (event.event == 'roundStart') {
+      currentWinner = null;
+      roundLosers.clear();
+
       final activePlayers = (event.data['players'] as List).cast<String>();
       for (final name in activePlayers) {
         allStats[name]?.recordActive();
@@ -110,13 +183,58 @@ Future<void> runTournament(
       for (final name in allStats.keys) {
         allStats[name]?.recordGame();
       }
+    } else if (event.event == 'fold') {
+      final name = event.data['player'] as String;
+      final community = event.data['communityCards'] as String;
+      final winProb = event.data['winProb'] as double;
+      final pot = event.data['pot'] as int;
+      final callAmount = event.data['callAmount'] as int;
+      final potOdds = callAmount <= 0 ? 0.0 : callAmount / (pot + callAmount);
+
+      final phase = _getPhase(community);
+      allStats[name]?.recordFold(phase, winProb, potOdds);
+    } else if (event.event == 'action') {
+      final name = event.data['player'] as String;
+      final winProb = event.data['winProb'] as double;
+      final pot = event.data['pot'] as int;
+      final callAmount = event.data['callAmount'] as int;
+      final potOdds = callAmount <= 0 ? 0.0 : callAmount / (pot + callAmount);
+
+      allStats[name]?.recordAction(winProb, potOdds);
     } else if (event.event == 'win') {
       final winner = event.data['player'] as String;
       allStats[winner]?.recordWin();
+      currentWinner = winner;
+      _recordBeats(currentWinner, roundLosers, allStats);
+    } else if (event.event == 'lose') {
+      final loser = event.data['player'] as String;
+      roundLosers.add(loser);
+      _recordBeats(currentWinner, roundLosers, allStats);
     }
   });
 
   await game.play(maxRounds: maxRounds);
   await sub.cancel();
   await eventController.close();
+}
+
+void _recordBeats(
+    String? winner, List<String> losers, Map<String, PlayerStats> allStats) {
+  if (winner == null || losers.isEmpty) return;
+  for (final loser in losers) {
+    allStats[winner]?.recordBeat(loser);
+  }
+  // Clear losers to avoid double counting if multiple win events happen (side pots?)
+  // Actually, in case of multiple winners (split pot), this might be tricky.
+  // But for now, let's just keep it simple.
+  losers.clear();
+}
+
+String _getPhase(String community) {
+  if (community.isEmpty) return 'preflop';
+  final cards = community.split(' ');
+  if (cards.length == 3) return 'flop';
+  if (cards.length == 4) return 'turn';
+  if (cards.length == 5) return 'river';
+  return 'unknown';
 }

@@ -350,6 +350,7 @@ class Game {
         table.raiseAmount = bettingPlayer.customBet;
       }
       final oldLastBet = table.lastBet;
+      final callAmount = oldLastBet - bettingPlayer.bet;
       table.takeBet(bettingPlayer, move);
 
       if (move == BettingMove.folded) {
@@ -362,6 +363,10 @@ class Game {
                 (bettingPlayer is ComputerPlayer)
                     ? (bettingPlayer as ComputerPlayer).lastWinProb
                     : 0.0,
+            pot: potSize,
+            lastBet: oldLastBet,
+            callAmount: callAmount,
+            bet: bettingPlayer.bet,
           ),
         );
       } else {
@@ -376,6 +381,8 @@ class Game {
                     ? (bettingPlayer as ComputerPlayer).lastWinProb
                     : 0.0,
             pot: potSize,
+            lastBet: oldLastBet,
+            callAmount: callAmount,
             bet: bettingPlayer.bet,
           ),
         );

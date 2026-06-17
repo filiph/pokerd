@@ -42,6 +42,7 @@ However, the package offers several features that may be valuable for future imp
 A command line tool (`tool/self_play.dart`) that allows running automated poker tournaments between computer players.
 It outputs a JSONL stream of events, which is designed to be consumed by an LLM to help with game balancing and NPC AI tweaking.
 The tool tracks statistics such as total games played, active games, and wins for each player.
+You can run the tool with something like `dart tool/self_play.dart --tournaments 20 --max-rounds 50 > temp_output_xyz.jsonl`. This will take a long time and will generate a large file which you can analyze, but you can also just read `tail -n 10 self_play_output.jsonl` for the aggregate stats.
 
 ## Example Dialogue
 
