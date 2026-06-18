@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:pokerd/src/game.dart';
 import 'package:pokerd/src/game_event.dart';
-import 'package:pokerd/src/terminal_ui.dart';
-import 'package:pokerd/src/computer_player.dart';
-import 'package:pokerd/src/chips_amount.dart';
 import 'package:pokerd/src/human_player.dart';
+import 'package:pokerd/src/terminal_ui.dart';
 
 void main(List<String> args) async {
   final parser = ArgParser()

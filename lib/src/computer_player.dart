@@ -30,21 +30,25 @@ class ComputerPlayer extends Player {
       'Grandma',
       ComputerPlayingStyle.grandma,
       monteCarloIterations: 300,
+      error: 0.1,
     ),
     ComputerPlayer(
       'Kyle',
       ComputerPlayingStyle.leeroy,
       monteCarloIterations: 100,
+      error: 0.2,
     ),
     ComputerPlayer(
       'Mr. Case',
       ComputerPlayingStyle.mrCase,
       monteCarloIterations: 500,
+      error: 0.1,
     ),
     ComputerPlayer(
       'Michelle',
       ComputerPlayingStyle.michelle,
-      monteCarloIterations: 400,
+      monteCarloIterations: 500,
+      error: 0.05,
     ),
   ];
 
@@ -90,6 +94,7 @@ class ComputerPlayer extends Player {
         numTimesTableRaised,
         tableLastBet,
         potSize,
+        community.isEmpty,
       ),
       ComputerPlayingStyle.michelle => _michellePlay(
         winProb,
@@ -98,6 +103,7 @@ class ComputerPlayer extends Player {
         tableLastBet,
         potSize,
         otherBets,
+        community.isEmpty,
       ),
     };
 
@@ -148,7 +154,7 @@ class ComputerPlayer extends Player {
     ChipsAmount tableLastBet,
   ) {
     // Leeroy is overconfident and aggressive.
-    final overconfidence = 0.2;
+    final overconfidence = 0.15;
     final effectiveWinProb = (winProb + overconfidence).clamp(0.0, 1.0);
 
     if (effectiveWinProb > 0.5) {
@@ -156,11 +162,11 @@ class ComputerPlayer extends Player {
         return (bet == tableLastBet) ? BettingMove.bet : BettingMove.raised;
       }
       return BettingMove.allIn;
-    } else if (effectiveWinProb > 0.2) {
+    } else if (effectiveWinProb > 0.25) {
       return (bet == tableLastBet) ? BettingMove.checked : BettingMove.called;
     } else {
       // Even with low prob, he might stay in
-      if (_random.nextDouble() < 0.3) {
+      if (_random.nextDouble() < 0.2) {
         return (bet == tableLastBet) ? BettingMove.checked : BettingMove.called;
       }
     }
@@ -173,6 +179,7 @@ class ComputerPlayer extends Player {
     int numTimesTableRaised,
     ChipsAmount tableLastBet,
     ChipsAmount potSize,
+    bool isPreflop,
   ) {
     // Suitcase uses pure pot odds.
     final callAmount = tableLastBet.value - bet.value;
@@ -185,8 +192,9 @@ class ComputerPlayer extends Player {
 
     final effectiveCallAmount = min(callAmount, chips.value);
     final potOdds = effectiveCallAmount / (potSize.value + effectiveCallAmount);
-    if (winProb > potOdds) {
-      if (winProb > potOdds * 1.5 && numTimesTableRaised < 3) {
+    final adjustedPotOdds = isPreflop ? potOdds * 0.70 : potOdds;
+    if (winProb > adjustedPotOdds) {
+      if (winProb > adjustedPotOdds * 1.5 && numTimesTableRaised < 3) {
         return BettingMove.raised;
       }
       return BettingMove.called;
@@ -202,6 +210,7 @@ class ComputerPlayer extends Player {
     ChipsAmount tableLastBet,
     ChipsAmount potSize,
     List<ChipsAmount> otherBets,
+    bool isPreflop,
   ) {
     // Michelle is well-rounded.
     final callAmount = tableLastBet.value - bet.value;
@@ -214,6 +223,7 @@ class ComputerPlayer extends Player {
 
     final effectiveCallAmount = min(callAmount, chips.value);
     final potOdds = effectiveCallAmount / (potSize.value + effectiveCallAmount);
+    final adjustedPotOdds = isPreflop ? potOdds * 0.70 : potOdds;
 
     // Consider others' bets as signal
     var othersConfidence = 0.0;
@@ -229,10 +239,10 @@ class ComputerPlayer extends Player {
       othersConfidence = (avgOtherBet / (potSize.value + 1)).clamp(0.0, 1.0);
     }
 
-    final adjustedWinProb = winProb * (1.0 - othersConfidence * 0.12);
+    final adjustedWinProb = winProb * (1.0 - othersConfidence * 0.05);
 
-    if (adjustedWinProb > potOdds) {
-      if (adjustedWinProb > potOdds * 1.22 && numTimesTableRaised < 3) {
+    if (adjustedWinProb > adjustedPotOdds) {
+      if (adjustedWinProb > adjustedPotOdds * 1.30 && numTimesTableRaised < 3) {
         return BettingMove.raised;
       }
       return BettingMove.called;
