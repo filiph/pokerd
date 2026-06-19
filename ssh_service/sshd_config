@@ -3,6 +3,9 @@ Port 22
 ListenAddress 0.0.0.0
 Protocol 2
 
+# Restrict SSH access to the game player only
+AllowUsers play
+
 # HostKeys location in the persistent volume
 HostKey /etc/ssh/host_keys/ssh_host_rsa_key
 HostKey /etc/ssh/host_keys/ssh_host_ecdsa_key
@@ -24,10 +27,13 @@ X11Forwarding no
 AllowAgentForwarding no
 GatewayPorts no
 PrintMotd no
+PermitTunnel no
 
 # Keepalive and pruning zombie connections to withstand HackerNews onslaught
 ClientAliveInterval 30
 ClientAliveCountMax 2
+LoginGraceTime 30
+MaxSessions 10
 
 # MaxStartups to handle sudden connection bursts
 MaxStartups 100:30:1000
