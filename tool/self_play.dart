@@ -6,6 +6,10 @@ import 'package:pokerd/src/game.dart';
 import 'package:pokerd/src/game_event.dart';
 import 'package:pokerd/src/human_player.dart';
 import 'package:pokerd/src/terminal_ui.dart';
+import 'package:pokerd/src/computer_player.dart';
+import 'package:pokerd/src/betting_move.dart';
+import 'package:pokerd/src/chips_amount.dart';
+import 'package:pokerd/src/card.dart';
 
 void main(List<String> args) async {
   final parser = ArgParser()
@@ -168,6 +172,10 @@ Future<void> runTournament(
 
   // Use only computer players
   game.players.removeWhere((p) => p is HumanPlayer);
+  final dummy = DummyPlayer('Dummy');
+  dummy.chips = const ChipsAmount(10000);
+  game.players.add(dummy);
+
   for (final player in game.players) {
     allStats.putIfAbsent(player.name, () => PlayerStats());
   }
@@ -246,4 +254,27 @@ String _getPhase(String community) {
   if (cards.length == 4) return 'turn';
   if (cards.length == 5) return 'river';
   return 'unknown';
+}
+
+class DummyPlayer extends ComputerPlayer {
+  DummyPlayer(String name)
+      : super(
+          name,
+          ComputerPlayingStyle.grandma,
+          monteCarloIterations: 1,
+          error: 0.0,
+        );
+
+  @override
+  Future<BettingMove> chooseNextMove(
+    ChipsAmount tableRaiseAmount,
+    int numTimesTableRaised,
+    ChipsAmount tableLastBet, {
+    List<Card> community = const [],
+    ChipsAmount potSize = const ChipsAmount(0),
+    List<ChipsAmount> otherBets = const [],
+  }) async {
+    lastWinProb = 0.5;
+    return bet < tableLastBet ? BettingMove.called : BettingMove.checked;
+  }
 }

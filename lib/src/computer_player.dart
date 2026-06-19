@@ -30,7 +30,7 @@ class ComputerPlayer extends Player {
       'Grandma',
       ComputerPlayingStyle.grandma,
       monteCarloIterations: 300,
-      error: 0.03,
+      error: 0.02,
     ),
     ComputerPlayer(
       'Kyle',
@@ -48,7 +48,7 @@ class ComputerPlayer extends Player {
       'Michelle',
       ComputerPlayingStyle.michelle,
       monteCarloIterations: 500,
-      error: 0.01,
+      error: 0.0,
     ),
   ];
 
@@ -129,17 +129,17 @@ class ComputerPlayer extends Player {
     ChipsAmount tableLastBet,
   ) {
     // Grandma is very conservative.
-    if (winProb > 0.5) {
+    if (winProb > 0.55) {
       if (bet < tableLastBet) {
         return BettingMove.called;
       } else if (numTimesTableRaised < 3) {
         return (bet == tableLastBet) ? BettingMove.bet : BettingMove.raised;
       }
       return (bet == tableLastBet) ? BettingMove.checked : BettingMove.called;
-    } else if (winProb > 0.2) {
+    } else if (winProb > 0.32) {
       if (bet == tableLastBet) {
         return BettingMove.checked;
-      } else if ((tableLastBet.value - bet.value) < chips.value * 0.1) {
+      } else if ((tableLastBet.value - bet.value) < chips.value * 0.05) {
         // Only call if it's cheap
         return BettingMove.called;
       }
@@ -215,7 +215,7 @@ class ComputerPlayer extends Player {
     // Michelle is well-rounded.
     final callAmount = tableLastBet.value - bet.value;
     if (callAmount <= 0) {
-      if (winProb > 0.5 && numTimesTableRaised < 3) {
+      if (winProb > 0.45 && numTimesTableRaised < 3) {
         return BettingMove.bet;
       }
       return BettingMove.checked;
@@ -239,10 +239,11 @@ class ComputerPlayer extends Player {
       othersConfidence = (avgOtherBet / (potSize.value + 1)).clamp(0.0, 1.0);
     }
 
-    final adjustedWinProb = winProb * (1.0 - othersConfidence * 0.05);
+    final othersDiscount = (winProb > 0.6) ? 0.02 : 0.05;
+    final adjustedWinProb = winProb * (1.0 - othersConfidence * othersDiscount);
 
     if (adjustedWinProb > adjustedPotOdds) {
-      if (adjustedWinProb > adjustedPotOdds * 1.30 && numTimesTableRaised < 3) {
+      if (adjustedWinProb > adjustedPotOdds * 1.25 && numTimesTableRaised < 3) {
         return BettingMove.raised;
       }
       return BettingMove.called;
