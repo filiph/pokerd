@@ -249,5 +249,132 @@ void main() {
         expect(move, equals(BettingMove.allIn));
       },
     );
+
+    test('Kyle folds very weak hand when facing a bet', () async {
+      final player = ComputerPlayer(
+        'Kyle',
+        ComputerPlayingStyle.leeroy,
+        random: Random(42),
+        monteCarloIterations: 100,
+      );
+      // Extremely weak hand
+      player.hand = [
+        const Card(CardRank.r2, CardSuite.spade),
+        const Card(CardRank.r7, CardSuite.heart),
+      ];
+
+      var foldedAtLeastOnce = false;
+      for (var i = 0; i < 20; i++) {
+        player.bet = const ChipsAmount(0);
+        player.chips = const ChipsAmount(10000);
+
+        final move = await player.chooseNextMove(
+          const ChipsAmount(2000),
+          0,
+          const ChipsAmount(2000),
+          community: [],
+          potSize: const ChipsAmount(5000),
+          otherBets: List.filled(8, const ChipsAmount(2000)),
+        );
+        if (move == BettingMove.folded) {
+          foldedAtLeastOnce = true;
+          break;
+        }
+      }
+      expect(
+        foldedAtLeastOnce,
+        isTrue,
+        reason: 'Kyle should occasionally fold very weak hands',
+      );
+    });
+
+    test(
+      'Mr. Case calls marginal pre-flop hand due to adjusted preflop pot odds',
+      () async {
+        final player = ComputerPlayer(
+          'Mr. Case',
+          ComputerPlayingStyle.mrCase,
+          random: Random(42),
+          monteCarloIterations: 1000,
+        );
+        player.hand = [
+          const Card(CardRank.k, CardSuite.heart),
+          const Card(CardRank.q, CardSuite.heart),
+        ];
+        player.bet = const ChipsAmount(0);
+        player.chips = const ChipsAmount(10000);
+
+        final move = await player.chooseNextMove(
+          const ChipsAmount(200),
+          0,
+          const ChipsAmount(200),
+          community: [],
+          potSize: const ChipsAmount(600),
+          otherBets: List.filled(3, const ChipsAmount(200)),
+        );
+        expect(move, anyOf(BettingMove.called, BettingMove.raised));
+      },
+    );
+
+    test(
+      'Michelle calls marginal pre-flop hand due to adjusted preflop pot odds',
+      () async {
+        final player = ComputerPlayer(
+          'Michelle',
+          ComputerPlayingStyle.michelle,
+          random: Random(42),
+          monteCarloIterations: 1000,
+        );
+        player.hand = [
+          const Card(CardRank.k, CardSuite.heart),
+          const Card(CardRank.q, CardSuite.heart),
+        ];
+        player.bet = const ChipsAmount(0);
+        player.chips = const ChipsAmount(10000);
+
+        final move = await player.chooseNextMove(
+          const ChipsAmount(200),
+          0,
+          const ChipsAmount(200),
+          community: [],
+          potSize: const ChipsAmount(600),
+          otherBets: List.filled(3, const ChipsAmount(200)),
+        );
+        expect(move, anyOf(BettingMove.called, BettingMove.raised));
+      },
+    );
+
+    test(
+      'Michelle resists folding to high-variance bet (bluff/bullying)',
+      () async {
+        final player = ComputerPlayer(
+          'Michelle',
+          ComputerPlayingStyle.michelle,
+          random: Random(42),
+          monteCarloIterations: 1000,
+        );
+        player.hand = [
+          const Card(CardRank.k, CardSuite.spade),
+          const Card(CardRank.k, CardSuite.heart),
+        ];
+        final community = [
+          const Card(CardRank.a, CardSuite.diamond),
+          const Card(CardRank.r8, CardSuite.club),
+          const Card(CardRank.r2, CardSuite.spade),
+        ];
+        player.bet = const ChipsAmount(0);
+        player.chips = const ChipsAmount(10000);
+
+        final move = await player.chooseNextMove(
+          const ChipsAmount(1000),
+          0,
+          const ChipsAmount(1000),
+          community: community,
+          potSize: const ChipsAmount(1500),
+          otherBets: [const ChipsAmount(1000)],
+        );
+        expect(move, anyOf(BettingMove.called, BettingMove.raised));
+      },
+    );
   });
 }
