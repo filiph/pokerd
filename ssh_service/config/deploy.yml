@@ -51,6 +51,7 @@ accessories:
         - "SETGID"
         - "NET_BIND_SERVICE"
         - "SYS_CHROOT"
+        - "CHOWN"
       log-driver: "json-file"
       log-opt:
         - "max-size=50m"
