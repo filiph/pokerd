@@ -30,25 +30,25 @@ class ComputerPlayer extends Player {
       'Grandma',
       ComputerPlayingStyle.grandma,
       monteCarloIterations: 300,
-      error: 0.1,
+      error: 0.03,
     ),
     ComputerPlayer(
       'Kyle',
       ComputerPlayingStyle.leeroy,
       monteCarloIterations: 100,
-      error: 0.2,
+      error: 0.05,
     ),
     ComputerPlayer(
       'Mr. Case',
       ComputerPlayingStyle.mrCase,
       monteCarloIterations: 500,
-      error: 0.1,
+      error: 0.03,
     ),
     ComputerPlayer(
       'Michelle',
       ComputerPlayingStyle.michelle,
       monteCarloIterations: 500,
-      error: 0.05,
+      error: 0.01,
     ),
   ];
 
