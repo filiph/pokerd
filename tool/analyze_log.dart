@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 class TournamentData {
   final int id;
@@ -25,7 +24,6 @@ void main(List<String> args) async {
   TournamentData? currentTournament;
   
   Set<String> activePlayersInCurrentTournament = {};
-  List<String> lastRoundPlayers = [];
 
   // All-ins stats
   final allInCount = <String, int>{};
@@ -73,7 +71,6 @@ void main(List<String> args) async {
         }
       }
       activePlayersInCurrentTournament = players.toSet();
-      lastRoundPlayers = players;
     } else if (eventName == 'action') {
       final player = event['player'] as String;
       final move = event['move'] as String;
@@ -81,7 +78,6 @@ void main(List<String> args) async {
         allInCount[player] = (allInCount[player] ?? 0) + 1;
       }
     } else if (eventName == 'fold') {
-      final player = event['player'] as String;
       final winProb = event['winProb'] as double;
       if (winProb > maxFoldWinProb) {
         maxFoldWinProb = winProb;

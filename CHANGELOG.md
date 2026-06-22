@@ -1,3 +1,11 @@
+## 1.0.16
+
+- Introduce decision error/jitter rates for NPC players to simulate realistic decision noise and strategic unpredictability.
+- Fine-tune NPC strategic thresholds and logic (such as Grandma's conservative boundaries, Kyle's overconfidence, and Michelle/Mr. Case's preflop adjusted pot odds).
+- Add new `analyze_log.dart` tool to parse self-play logs and generate detailed tournament reports and player profiles.
+- Add comprehensive computer player behavior unit tests.
+- Harden the SSH service deployment with resource constraints, container log rotation, restricted access, and tunnel prevention.
+
 ## 1.0.15
 
 - Add SSH service support allowing users to play the poker game over SSH.

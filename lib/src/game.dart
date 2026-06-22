@@ -360,7 +360,7 @@ class Game {
             playerCards: List.from(bettingPlayer.hand),
             communityCards: List.from(table.community),
             winProb: (bettingPlayer is ComputerPlayer)
-                ? (bettingPlayer as ComputerPlayer).lastWinProb
+                ? bettingPlayer.lastWinProb
                 : 0.0,
             pot: potSize,
             lastBet: oldLastBet,
@@ -376,7 +376,7 @@ class Game {
             playerCards: List.from(bettingPlayer.hand),
             communityCards: List.from(table.community),
             winProb: (bettingPlayer is ComputerPlayer)
-                ? (bettingPlayer as ComputerPlayer).lastWinProb
+                ? bettingPlayer.lastWinProb
                 : 0.0,
             pot: potSize,
             lastBet: oldLastBet,
